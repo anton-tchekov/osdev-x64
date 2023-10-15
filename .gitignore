@@ -1,0 +1,12 @@
+# Temp build files
+*.iso
+*.elf
+*.o
+*.d
+*.bin
+*.sys
+*.exe
+*.EFI
+
+# ide folder
+.idea/
