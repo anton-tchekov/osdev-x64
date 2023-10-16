@@ -106,7 +106,7 @@ static int scancode_to_key(int scancode, int esc)
 			case 0x0A: return KEY_9;
 			case 0x0B: return KEY_0;
 			case 0x0C: return KEY_MINUS;
-			case 0x0D: return KEY_EQUALS; // BUG ?
+			case 0x0D: return KEY_EQUALS;
 			case 0x0E: return KEY_BACKSPACE;
 			case 0x0F: return KEY_TAB;
 			case 0x10: return KEY_Q;
@@ -133,7 +133,7 @@ static int scancode_to_key(int scancode, int esc)
 			case 0x25: return KEY_K;
 			case 0x26: return KEY_L;
 			case 0x27: return KEY_SEMICOLON;
-			case 0x29: return KEY_EQUALS;
+			case 0x29: return KEY_GRAVE;
 			case 0x2A: return KEY_L_SHIFT;
 			case 0x2B: return KEY_BACKSLASH;
 			case 0x2C: return KEY_Z;
@@ -149,6 +149,7 @@ static int scancode_to_key(int scancode, int esc)
 			case 0x36: return KEY_R_SHIFT;
 			case 0x38: return KEY_L_ALT;
 			case 0x39: return KEY_SPACE;
+			case 0x56: return KEY_NON_US_BACKSLASH;
 			case 0x5B: return KEY_L_GUI;
 		}
 	}
@@ -159,18 +160,18 @@ static int scancode_to_key(int scancode, int esc)
 void keyboard_irq_handler(void)
 {
 	static int esc, mods;
-	int scancode = inb(0x60);
+	int released, key, codepoint, scancode, mod;
+
+	mod = 0;
+	scancode = inb(0x60);
 	if(scancode == 0xE0)
 	{
 		esc = 1;
 		return;
 	}
 
-	int released = (scancode >> 7) & 1;
-	int key = scancode_to_key(scancode & 0x7F, esc);
-	int mod = 0;
-	int codepoint;
-
+	released = (scancode >> 7) & 1;
+	key = scancode_to_key(scancode & 0x7F, esc);
 	if(esc)
 	{
 		esc = 0;
@@ -211,7 +212,10 @@ void keyboard_irq_handler(void)
 
 	key |= mods;
 	codepoint = key_to_codepoint(key);
-	key_event(key, codepoint, released);
+	if(key_event)
+	{
+		key_event(key, codepoint, released);
+	}
 }
 
 void keyboard_init(void)
