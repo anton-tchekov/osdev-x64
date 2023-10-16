@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "keyboard.h"
 #include "cpu.h"
 #include "stdio.h"

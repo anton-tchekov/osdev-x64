@@ -24,16 +24,6 @@ static struct GDT_Pointer gdt_pointer;
 static struct IDT_Descriptor idt[256];
 static struct IDT_Pointer idt_pointer;
 
-struct PMM_Info_Struct
-{
-	size_t memory_size;
-	uint32_t max_pages;
-	uint32_t used_pages;
-	struct stivale2_struct_tag_memmap *memory_map;
-};
-
-struct PMM_Info_Struct pmm_info;
-
 static const char *exceptions[] =
 {
 	"Divide Error",
@@ -324,46 +314,33 @@ void pic_signal_eoi(uint64_t isr_number)
 
 uint64_t isr_handler(uint64_t rsp)
 {
-	interrupt_cpu_state_t *cpu = (interrupt_cpu_state_t*)rsp;
+	interrupt_cpu_state_t *cpu = (interrupt_cpu_state_t *)rsp;
 
 	if(cpu->isr_number <= 31)
 	{
+		framebuffer_reset_screen();
 		serial_tx_str(TERMINAL_RED);
-		debug("\n────────────────────────\n");
-		debug("⚠ EXCEPTION OCCURRED! ⚠\n\n");
-		debug("⤷ ISR-No. %d: %s\n", cpu->isr_number, exceptions[cpu->isr_number]);
-		debug("⤷ Error code: 0x%.16llx\n\n\n", cpu->error_code);
-		serial_tx_str(TERMINAL_CYAN);
-		debug("ℹ Register dump:\n\n");
-		debug("⤷ rax: 0x%.16llx, rbx:	0x%.16llx, rcx: 0x%.16llx, rdx: 0x%.16llx\n"
-			  "⤷ rsi: 0x%.16llx, rdi:	0x%.16llx, rbp: 0x%.16llx, r8 : 0x%.16llx\n"
-			  "⤷ r9 : 0x%.16llx, r10:	0x%.16llx, r11: 0x%.16llx, r12: 0x%.16llx\n"
-			  "⤷ r13: 0x%.16llx, r14:	0x%.16llx, r15: 0x%.16llx, ss : 0x%.16llx\n"
-			  "⤷ rsp: 0x%.16llx, rflags: 0x%.16llx, cs : 0x%.16llx, rip: 0x%.16llx\n",
-			  cpu->rax, cpu->rbx,	cpu->rcx, cpu->rdx,
-			  cpu->rsi, cpu->rdi,	cpu->rbp, cpu->r8,
-			  cpu->r9,  cpu->r10,	cpu->r11, cpu->r12,
-			  cpu->r13, cpu->r14,	cpu->r15, cpu->ss,
-			  cpu->rsp, cpu->rflags, cpu->cs,  cpu->rip);
+		debug(
+			"\n"
+			"-------------------\n"
+			"EXCEPTION OCCURRED!\n\n"
+			"ISR-No. %d: %s\n"
+			"Error code: 0x%.16llx\n\n\n"
+			"Register dump:\n\n"
+			"  rax: 0x%.16llx   rbx:    0x%.16llx   rcx: 0x%.16llx   rdx: 0x%.16llx\n"
+			"  rsi: 0x%.16llx   rdi:    0x%.16llx   rbp: 0x%.16llx   r8:  0x%.16llx\n"
+			"  r9:  0x%.16llx   r10:    0x%.16llx   r11: 0x%.16llx   r12: 0x%.16llx\n"
+			"  r13: 0x%.16llx   r14:    0x%.16llx   r15: 0x%.16llx   ss:  0x%.16llx\n"
+			"  rsp: 0x%.16llx   rflags: 0x%.16llx   cs   0x%.16llx   rip: 0x%.16llx\n",
+			cpu->isr_number, exceptions[cpu->isr_number],
+			cpu->error_code,
+			cpu->rax, cpu->rbx,    cpu->rcx, cpu->rdx,
+			cpu->rsi, cpu->rdi,    cpu->rbp, cpu->r8,
+			cpu->r9,  cpu->r10,    cpu->r11, cpu->r12,
+			cpu->r13, cpu->r14,    cpu->r15, cpu->ss,
+			cpu->rsp, cpu->rflags, cpu->cs,  cpu->rip);
 
 		serial_tx_str(TERMINAL_RESET);
-
-		framebuffer_reset_screen();
-		printk(GFX_RED,		"\n────────────────────────\n");
-		printk(GFX_RED,		"⚠ EXCEPTION OCCURRED! ⚠\n\n");
-		printk(GFX_RED,		"⤷ ISR-No. %d: %s\n", cpu->isr_number, exceptions[cpu->isr_number]);
-		printk(GFX_RED,		"⤷ Error code: 0x%.16llx\n\n\n", cpu->error_code);
-		printk(GFX_CYAN,	"ℹ Register dump:\n\n");
-		printk(GFX_CYAN,	"⤷ rax: 0x%.16llx, rbx:	0x%.16llx, rcx: 0x%.16llx, rdx: 0x%.16llx\n"
-			   "⤷ rsi: 0x%.16llx, rdi:	0x%.16llx, rbp: 0x%.16llx, r8 : 0x%.16llx\n"
-			   "⤷ r9 : 0x%.16llx, r10:	0x%.16llx, r11: 0x%.16llx, r12: 0x%.16llx\n"
-			   "⤷ r13: 0x%.16llx, r14:	0x%.16llx, r15: 0x%.16llx, ss : 0x%.16llx\n"
-			   "⤷ rsp: 0x%.16llx, rflags: 0x%.16llx, cs : 0x%.16llx, rip: 0x%.16llx\n",
-			   cpu->rax, cpu->rbx,	cpu->rcx, cpu->rdx,
-			   cpu->rsi, cpu->rdi,	cpu->rbp, cpu->r8,
-			   cpu->r9,  cpu->r10,	cpu->r11, cpu->r12,
-			   cpu->r13, cpu->r14,	cpu->r15, cpu->ss,
-			   cpu->rsp, cpu->rflags, cpu->cs,  cpu->rip);
 
 		for(;;)
 		{
@@ -416,47 +393,23 @@ static const char *get_memory_map_entry_type(uint32_t type)
 	}
 }
 
-void pmm_init(struct stivale2_struct *stivale2_struct)
+void pmm_init(struct stivale2_struct *s)
 {
-	size_t highest_page = 0;
-	struct stivale2_struct_tag_memmap *memory_map =
-		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
-
-	struct stivale2_mmap_entry *current_entry;
-	size_t top = 0;
 	size_t i;
+	struct stivale2_struct_tag_memmap *memory_map;
 
-	pmm_info.memory_map = memory_map;
+	memory_map = stivale2_get_tag(s, STIVALE2_STRUCT_TAG_MEMMAP_ID);
 	kernel_log(INFO, "Memory map layout:\n");
-	for(i = 0; i < pmm_info.memory_map->entries; ++i)
+	for(i = 0; i < memory_map->entries; ++i)
 	{
-		current_entry = &pmm_info.memory_map->memmap[i];
+		struct stivale2_mmap_entry *cur = &memory_map->memmap[i];
 		serial_tx_str(TERMINAL_PURPLE);
 		debug("%.8d: Base: 0x%.16llx | Length: 0x%.16llx | Type: %s\n",
-			i, current_entry->base, current_entry->length, get_memory_map_entry_type(current_entry->type));
-		printk(GFX_PURPLE, "%.8d: Base: 0x%.16llx | Length: 0x%.16llx | Type: %s\n",
-			i, current_entry->base, current_entry->length, get_memory_map_entry_type(current_entry->type));
+			i, cur->base, cur->length, get_memory_map_entry_type(cur->type));
 		serial_tx_str(TERMINAL_RESET);
 
-		if(current_entry->type == STIVALE2_MMAP_USABLE ||
-			current_entry->type == STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE ||
-			current_entry->type == STIVALE2_MMAP_KERNEL_AND_MODULES)
-		{
-			top = current_entry->base + current_entry->length;
-			if(top > highest_page)
-			{
-				highest_page = top;
-			}
-		}
+		printk(GFX_PURPLE,
+			"%.8d: Base: 0x%.16llx | Length: 0x%.16llx | Type: %s\n",
+			i, cur->base, cur->length, get_memory_map_entry_type(cur->type));
 	}
-
-	pmm_info.memory_size = highest_page;
-	pmm_info.max_pages = pmm_info.memory_size / 4;
-	pmm_info.used_pages = pmm_info.max_pages;
-	kernel_log(INFO, "Memory specifications:\n");
-	serial_tx_str(TERMINAL_PURPLE);
-	current_entry = &pmm_info.memory_map->memmap[0];
-	debug("Total amount of memory: %d kB\n", current_entry->base + current_entry->length - 1);
-	printk(GFX_PURPLE, "Total amount of memory: %d kB\n", current_entry->base + current_entry->length - 1);
-	serial_tx_str(TERMINAL_RESET);
 }
