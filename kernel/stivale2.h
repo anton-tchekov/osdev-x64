@@ -1,9 +1,10 @@
-#ifndef __STIVALE__STIVALE2_H__
-#define __STIVALE__STIVALE2_H__
+#ifndef __STIVALE2_H__
+#define __STIVALE2_H__
 
 #include <stdint.h>
 
-struct stivale2_anchor {
+struct stivale2_anchor
+{
 	uint8_t anchor[15];
 	uint8_t bits;
 	uint64_t phys_load_addr;
@@ -12,13 +13,14 @@ struct stivale2_anchor {
 	uint64_t phys_stivale2hdr;
 } __attribute__((__packed__));
 
-struct stivale2_tag {
+struct stivale2_tag
+{
 	uint64_t identifier;
 	uint64_t next;
 } __attribute__((__packed__));
 
-
-struct stivale2_header {
+struct stivale2_header
+{
 	uint64_t entry_point;
 	uint64_t stack;
 	uint64_t flags;
@@ -27,14 +29,16 @@ struct stivale2_header {
 
 #define STIVALE2_HEADER_TAG_ANY_VIDEO_ID 0xc75c9fa92a44c4db
 
-struct stivale2_header_tag_any_video {
+struct stivale2_header_tag_any_video
+{
 	struct stivale2_tag tag;
 	uint64_t preference;
 } __attribute__((packed));
 
 #define STIVALE2_HEADER_TAG_FRAMEBUFFER_ID 0x3ecc1bc43d0f7971
 
-struct stivale2_header_tag_framebuffer {
+struct stivale2_header_tag_framebuffer
+{
 	struct stivale2_tag tag;
 	uint16_t framebuffer_width;
 	uint16_t framebuffer_height;
@@ -45,7 +49,8 @@ struct stivale2_header_tag_framebuffer {
 
 #define STIVALE2_HEADER_TAG_TERMINAL_ID 0xa85d499b1823be72
 
-struct stivale2_header_tag_terminal {
+struct stivale2_header_tag_terminal
+{
 	struct stivale2_tag tag;
 	uint64_t flags;
 	uint64_t callback;
@@ -56,7 +61,8 @@ struct stivale2_header_tag_terminal {
 
 #define STIVALE2_HEADER_TAG_SMP_ID 0x1ab015085f3273df
 
-struct stivale2_header_tag_smp {
+struct stivale2_header_tag_smp
+{
 	struct stivale2_tag tag;
 	uint64_t flags;
 } __attribute__((__packed__));
@@ -65,8 +71,8 @@ struct stivale2_header_tag_smp {
 
 #define STIVALE2_HEADER_TAG_UNMAP_NULL_ID 0x92919432b16fe7e7
 
-
-struct stivale2_struct {
+struct stivale2_struct
+{
 #define STIVALE2_BOOTLOADER_BRAND_SIZE 64
 	char bootloader_brand[STIVALE2_BOOTLOADER_BRAND_SIZE];
 
@@ -82,13 +88,15 @@ struct stivale2_struct {
 #define STIVALE2_PMR_WRITABLE   ((uint64_t)1 << 1)
 #define STIVALE2_PMR_READABLE   ((uint64_t)1 << 2)
 
-struct stivale2_pmr {
+struct stivale2_pmr
+{
 	uint64_t base;
 	uint64_t length;
 	uint64_t permissions;
 } __attribute__((packed));
 
-struct stivale2_struct_tag_pmrs {
+struct stivale2_struct_tag_pmrs
+{
 	struct stivale2_tag tag;
 	uint64_t entries;
 	struct stivale2_pmr pmrs[];
@@ -96,30 +104,33 @@ struct stivale2_struct_tag_pmrs {
 
 #define STIVALE2_STRUCT_TAG_CMDLINE_ID 0xe5e76a1b4597a781
 
-struct stivale2_struct_tag_cmdline {
+struct stivale2_struct_tag_cmdline
+{
 	struct stivale2_tag tag;
 	uint64_t cmdline;
 } __attribute__((__packed__));
 
 #define STIVALE2_STRUCT_TAG_MEMMAP_ID 0x2187f79e8612de07
 
-#define STIVALE2_MMAP_USABLE				 1
-#define STIVALE2_MMAP_RESERVED			   2
-#define STIVALE2_MMAP_ACPI_RECLAIMABLE	   3
-#define STIVALE2_MMAP_ACPI_NVS			   4
-#define STIVALE2_MMAP_BAD_MEMORY			 5
-#define STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE 0x1000
-#define STIVALE2_MMAP_KERNEL_AND_MODULES	 0x1001
-#define STIVALE2_MMAP_FRAMEBUFFER			0x1002
+#define STIVALE2_MMAP_USABLE                  1
+#define STIVALE2_MMAP_RESERVED                2
+#define STIVALE2_MMAP_ACPI_RECLAIMABLE        3
+#define STIVALE2_MMAP_ACPI_NVS                4
+#define STIVALE2_MMAP_BAD_MEMORY              5
+#define STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE   0x1000
+#define STIVALE2_MMAP_KERNEL_AND_MODULES       0x1001
+#define STIVALE2_MMAP_FRAMEBUFFER              0x1002
 
-struct stivale2_mmap_entry {
+struct stivale2_mmap_entry
+{
 	uint64_t base;
 	uint64_t length;
 	uint32_t type;
 	uint32_t unused;
 } __attribute__((__packed__));
 
-struct stivale2_struct_tag_memmap {
+struct stivale2_struct_tag_memmap
+{
 	struct stivale2_tag tag;
 	uint64_t entries;
 	struct stivale2_mmap_entry memmap[];
@@ -129,7 +140,8 @@ struct stivale2_struct_tag_memmap {
 
 #define STIVALE2_FBUF_MMODEL_RGB 1
 
-struct stivale2_struct_tag_framebuffer {
+struct stivale2_struct_tag_framebuffer
+{
 	struct stivale2_tag tag;
 	uint64_t framebuffer_addr;
 	uint16_t framebuffer_width;
@@ -147,7 +159,8 @@ struct stivale2_struct_tag_framebuffer {
 
 #define STIVALE2_STRUCT_TAG_EDID_ID 0x968609d7af96b845
 
-struct stivale2_struct_tag_edid {
+struct stivale2_struct_tag_edid
+{
 	struct stivale2_tag tag;
 	uint64_t edid_size;
 	uint8_t  edid_information[];
@@ -155,7 +168,8 @@ struct stivale2_struct_tag_edid {
 
 #define STIVALE2_STRUCT_TAG_TEXTMODE_ID 0x38d74c23e0dca893
 
-struct stivale2_struct_tag_textmode {
+struct stivale2_struct_tag_textmode
+{
 	struct stivale2_tag tag;
 	uint64_t address;
 	uint16_t unused;
@@ -168,7 +182,8 @@ struct stivale2_struct_tag_textmode {
 
 #define STIVALE2_STRUCT_TAG_TERMINAL_ID 0xc2b3f4c3233b0974
 
-struct stivale2_struct_tag_terminal {
+struct stivale2_struct_tag_terminal
+{
 	struct stivale2_tag tag;
 	uint32_t flags;
 	uint16_t cols;
@@ -179,7 +194,8 @@ struct stivale2_struct_tag_terminal {
 
 #define STIVALE2_STRUCT_TAG_MODULES_ID 0x4b6fe466aade04ce
 
-struct stivale2_module {
+struct stivale2_module
+{
 	uint64_t begin;
 	uint64_t end;
 
@@ -187,7 +203,8 @@ struct stivale2_module {
 	char string[STIVALE2_MODULE_STRING_SIZE];
 } __attribute__((__packed__));
 
-struct stivale2_struct_tag_modules {
+struct stivale2_struct_tag_modules
+{
 	struct stivale2_tag tag;
 	uint64_t module_count;
 	struct stivale2_module modules[];
@@ -195,14 +212,16 @@ struct stivale2_struct_tag_modules {
 
 #define STIVALE2_STRUCT_TAG_RSDP_ID 0x9e1786930a375e78
 
-struct stivale2_struct_tag_rsdp {
+struct stivale2_struct_tag_rsdp
+{
 	struct stivale2_tag tag;
 	uint64_t rsdp;
 } __attribute__((__packed__));
 
 #define STIVALE2_STRUCT_TAG_EPOCH_ID 0x566a7bed888e1407
 
-struct stivale2_struct_tag_epoch {
+struct stivale2_struct_tag_epoch
+{
 	struct stivale2_tag tag;
 	uint64_t epoch;
 } __attribute__((__packed__));
@@ -211,35 +230,40 @@ struct stivale2_struct_tag_epoch {
 
 #define STIVALE2_FIRMWARE_BIOS (1 << 0)
 
-struct stivale2_struct_tag_firmware {
+struct stivale2_struct_tag_firmware
+{
 	struct stivale2_tag tag;
 	uint64_t flags;
 } __attribute__((__packed__));
 
 #define STIVALE2_STRUCT_TAG_EFI_SYSTEM_TABLE_ID 0x4bc5ec15845b558e
 
-struct stivale2_struct_tag_efi_system_table {
+struct stivale2_struct_tag_efi_system_table
+{
 	struct stivale2_tag tag;
 	uint64_t system_table;
 } __attribute__((__packed__));
 
 #define STIVALE2_STRUCT_TAG_KERNEL_FILE_ID 0xe599d90c2975584a
 
-struct stivale2_struct_tag_kernel_file {
+struct stivale2_struct_tag_kernel_file
+{
 	struct stivale2_tag tag;
 	uint64_t kernel_file;
 } __attribute__((__packed__));
 
 #define STIVALE2_STRUCT_TAG_KERNEL_SLIDE_ID 0xee80847d01506c57
 
-struct stivale2_struct_tag_kernel_slide {
+struct stivale2_struct_tag_kernel_slide
+{
 	struct stivale2_tag tag;
 	uint64_t kernel_slide;
 } __attribute__((packed));
 
 #define STIVALE2_STRUCT_TAG_SMBIOS_ID 0x274bd246c62bf7d1
 
-struct stivale2_struct_tag_smbios {
+struct stivale2_struct_tag_smbios
+{
 	struct stivale2_tag tag;
 	uint64_t flags;
 	uint64_t smbios_entry_32;
@@ -248,7 +272,8 @@ struct stivale2_struct_tag_smbios {
 
 #define STIVALE2_STRUCT_TAG_SMP_ID 0x34d1d96339647025
 
-struct stivale2_smp_info {
+struct stivale2_smp_info
+{
 	uint32_t processor_id;
 	uint32_t lapic_id;
 	uint64_t target_stack;
@@ -256,7 +281,8 @@ struct stivale2_smp_info {
 	uint64_t extra_argument;
 } __attribute__((__packed__));
 
-struct stivale2_struct_tag_smp {
+struct stivale2_struct_tag_smp
+{
 	struct stivale2_tag tag;
 	uint64_t flags;
 	uint32_t bsp_lapic_id;
@@ -267,21 +293,24 @@ struct stivale2_struct_tag_smp {
 
 #define STIVALE2_STRUCT_TAG_PXE_SERVER_INFO 0x29d1e96239247032
 
-struct stivale2_struct_tag_pxe_server_info {
+struct stivale2_struct_tag_pxe_server_info
+{
 	struct stivale2_tag tag;
 	uint32_t server_ip;
 } __attribute__((__packed__));
 
 #define STIVALE2_STRUCT_TAG_MMIO32_UART 0xb813f9b8dbc78797
 
-struct stivale2_struct_tag_mmio32_uart {
+struct stivale2_struct_tag_mmio32_uart
+{
 	struct stivale2_tag tag;
 	uint64_t addr;
 } __attribute__((__packed__));
 
 #define STIVALE2_STRUCT_TAG_DTB 0xabb29bd49a2833fa
 
-struct stivale2_struct_tag_dtb {
+struct stivale2_struct_tag_dtb
+{
 	struct stivale2_tag tag;
 	uint64_t addr;
 	uint64_t size;
@@ -289,7 +318,8 @@ struct stivale2_struct_tag_dtb {
 
 #define STIVALE2_STRUCT_TAG_VMAP 0xb0ed257db18cb58f
 
-struct stivale2_struct_vmap {
+struct stivale2_struct_vmap
+{
 	struct stivale2_tag tag;
 	uint64_t addr;
 } __attribute__((__packed__));

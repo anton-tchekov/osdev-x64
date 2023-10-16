@@ -20,7 +20,6 @@ void kmain(struct stivale2_struct *stivale2_struct)
 	framebuffer_init(stivale2_struct, GFX_BLACK);
 	serial_init();
 	kernel_log(INFO, "Framebuffer and serial initialized\n");
-	kernel_log(INFO, "Kernel started\n");
 	pmm_init(stivale2_struct);
 	gdt_init();
 	idt_init();

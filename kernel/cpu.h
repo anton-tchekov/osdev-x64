@@ -160,11 +160,21 @@ static inline char *cpu_get_vendor_string(void)
 	return vendor_string;
 }
 
+static inline void hlt(void)
+{
+	asm("hlt");
+}
+
+static inline void cli(void)
+{
+	asm("cli");
+}
+
 static inline void halt(void)
 {
 	for(;;)
 	{
-		asm("hlt");
+		hlt();
 	}
 }
 
