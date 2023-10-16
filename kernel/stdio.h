@@ -1,6 +1,7 @@
 #ifndef PRINTK_H
 #define PRINTK_H
 
+#include <stdint.h>
 #include "framebuffer.h"
 #include "serial.h"
 
