@@ -1,5 +1,5 @@
-#ifndef CPU_H
-#define CPU_H
+#ifndef __CPU_H__
+#define __CPU_H__
 
 #include <stddef.h>
 #include <stdint.h>
@@ -56,15 +56,15 @@ typedef enum
 
 typedef enum
 {
-	CPUID_FEAT_ECX_SSE3		= 1 << 0,
-	CPUID_FEAT_ECX_PCLMUL	= 1 << 1,
-	CPUID_FEAT_ECX_DTES64	= 1 << 2,
-	CPUID_FEAT_ECX_MONITOR	= 1 << 3,
-	CPUID_FEAT_ECX_DS_CPL	= 1 << 4,
-	CPUID_FEAT_ECX_VMX		= 1 << 5,
-	CPUID_FEAT_ECX_SMX		= 1 << 6,
-	CPUID_FEAT_ECX_EST		= 1 << 7,
-	CPUID_FEAT_ECX_TM2		= 1 << 8,
+	CPUID_FEAT_ECX_SSE3     = 1 << 0,
+	CPUID_FEAT_ECX_PCLMUL   = 1 << 1,
+	CPUID_FEAT_ECX_DTES64   = 1 << 2,
+	CPUID_FEAT_ECX_MONITOR  = 1 << 3,
+	CPUID_FEAT_ECX_DS_CPL   = 1 << 4,
+	CPUID_FEAT_ECX_VMX      = 1 << 5,
+	CPUID_FEAT_ECX_SMX      = 1 << 6,
+	CPUID_FEAT_ECX_EST      = 1 << 7,
+	CPUID_FEAT_ECX_TM2      = 1 << 8,
 	CPUID_FEAT_ECX_SSSE3	= 1 << 9,
 	CPUID_FEAT_ECX_CID		= 1 << 10,
 	CPUID_FEAT_ECX_SDBG		= 1 << 11,
@@ -80,13 +80,13 @@ typedef enum
 	CPUID_FEAT_ECX_MOVBE	= 1 << 22,
 	CPUID_FEAT_ECX_POPCNT	= 1 << 23,
 	CPUID_FEAT_ECX_TSC		= 1 << 24,
-	CPUID_FEAT_ECX_AES		= 1 << 25,
-	CPUID_FEAT_ECX_XSAVE	= 1 << 26,
-	CPUID_FEAT_ECX_OSXSAVE	= 1 << 27,
-	CPUID_FEAT_ECX_AVX		= 1 << 28,
-	CPUID_FEAT_ECX_F16C		= 1 << 29,
-	CPUID_FEAT_ECX_RDRAND	= 1 << 30,
-	CPUID_FEAT_ECX_HYPERVISOR	= 1 << 31,
+	CPUID_FEAT_ECX_AES        = 1 << 25,
+	CPUID_FEAT_ECX_XSAVE      = 1 << 26,
+	CPUID_FEAT_ECX_OSXSAVE    = 1 << 27,
+	CPUID_FEAT_ECX_AVX        = 1 << 28,
+	CPUID_FEAT_ECX_F16C       = 1 << 29,
+	CPUID_FEAT_ECX_RDRAND     = 1 << 30,
+	CPUID_FEAT_ECX_HYPERVISOR = 1 << 31,
 
 	CPUID_FEAT_EDX_FPU		= 1 << 0,
 	CPUID_FEAT_EDX_VME		= 1 << 1,
@@ -120,140 +120,21 @@ typedef enum
 	CPUID_FEAT_EDX_PBE		= 1 << 31
 } cpuid_features_t;
 
-static inline int cpuid(cpuid_registers_t *registers)
-{
-	uint32_t cpuid_max;
-
-	asm volatile("cpuid"
-		: "=a" (cpuid_max)
-		: "a" (registers->leaf & 0x80000000)
-		: "rbx", "rcx", "rdx");
-
-	if (registers->leaf > cpuid_max)
-	return 0;
-
-	asm volatile("cpuid"
-		: "=a" (registers->eax), "=b" (registers->ebx), "=c" (registers->ecx), "=d" (registers->edx)
-		: "a" (registers->leaf), "c" (registers->subleaf));
-
-	return 1;
-}
-
-static inline char *cpu_get_vendor_string(void)
-{
-	cpuid_registers_t *regs = &(cpuid_registers_t)
-	{
-		.leaf = CPUID_GET_VENDOR_STRING,
-		.subleaf = 0,
-
-		.eax = 0,
-		.ebx = 0,
-		.ecx = 0,
-		.edx = 0
-	};
-
-	cpuid(regs);
-
-	static char vendor_string[16];
-	snprintf(vendor_string, 13, "%.4s%.4s%.4s",
-		(char *)&regs->ebx, (char *)&regs->edx, (char *)&regs->ecx);
-
-	return vendor_string;
-}
-
-static inline void hlt(void)
-{
-	asm("hlt");
-}
-
-static inline void cli(void)
-{
-	asm("cli");
-}
-
-static inline void halt(void)
-{
-	for(;;)
-	{
-		hlt();
-	}
-}
-
-static inline void outb(uint16_t port, uint8_t value)
-{
-	asm volatile("outb %0, %1" : : "a"(value), "Nd"(port));
-}
-
-static inline uint8_t inb(uint16_t port)
-{
-	uint8_t ret;
-	asm volatile("inb %1, %0" : "=a"(ret) : "Nd"(port));
-	return ret;
-}
-
-static inline void io_wait(void)
-{
-	inb(0x80);
-}
-
-
-#define HIGHER_HALF_DATA_LV5	0xFF00000000000000UL
-#define HIGHER_HALF_DATA_LV4	0xFFFF800000000000UL
-#define HIGHER_HALF_CODE	0xFFFFFFFF80000000UL
-
-#define PAGE_SIZE			4096
-#define TABLES_PER_DIRECTORY		512
-#define PAGES_PER_TABLE			512
-
-#define KB_TO_PAGES(kb)			(((kb) * 1024) / PAGE_SIZE)
-#define ALIGN_DOWN(addr, align)		((addr) & ~((align)-1))
-#define ALIGN_UP(addr, align)		(((addr) + (align)-1) & ~((align)-1))
-
-#define IS_PAGE_ALIGNED(num)		((num % PAGE_SIZE) == 0)
-
-static inline bool is_la57_enabled(void)
-{
-	uint64_t cr4;
-	asm volatile("mov %%cr4, %0" : "=rax"(cr4));
-	return (cr4 >> 12) & 1;
-}
-
-static inline uintptr_t phys_to_higher_half_data(uintptr_t address)
-{
-	if (is_la57_enabled())
-	return HIGHER_HALF_DATA_LV5 + address;
-
-	return HIGHER_HALF_DATA_LV4 + address;
-}
-
-static inline uintptr_t phys_to_higher_half_code(uintptr_t address)
-{
-	return HIGHER_HALF_CODE + address;
-}
-
-static inline uintptr_t higher_half_data_to_phys(uintptr_t address)
-{
-	if (is_la57_enabled())
-	return address - HIGHER_HALF_DATA_LV5;
-
-	return address - HIGHER_HALF_DATA_LV4;
-}
-
-static inline uintptr_t higher_half_code_to_phys(uintptr_t address)
-{
-	return address - HIGHER_HALF_CODE;
-}
-
-void pmm_init(struct stivale2_struct *stivale2_struct);
+#define HIGHER_HALF_DATA_LV5        0xFF00000000000000UL
+#define HIGHER_HALF_DATA_LV4        0xFFFF800000000000UL
+#define HIGHER_HALF_CODE            0xFFFFFFFF80000000UL
+#define PAGE_SIZE               4096
+#define TABLES_PER_DIRECTORY     512
+#define PAGES_PER_TABLE          512
 
 struct GDT_Descriptor
 {
-	uint16_t	limit_15_0;
-	uint16_t	base_15_0;
-	uint8_t	base_23_16;
-	uint8_t	type;
-	uint8_t	limit_19_16_and_flags;
-	uint8_t	base_31_24;
+	uint16_t limit_15_0;
+	uint16_t base_15_0;
+	uint8_t base_23_16;
+	uint8_t type;
+	uint8_t limit_19_16_and_flags;
+	uint8_t base_31_24;
 } __attribute__((packed));
 
 struct TSS
@@ -312,6 +193,123 @@ struct IDT_Pointer
 	uint16_t limit;
 	uint64_t base;
 } __attribute__((packed));
+
+
+static inline int cpuid(cpuid_registers_t *registers)
+{
+	uint32_t cpuid_max;
+
+	asm volatile("cpuid"
+		: "=a" (cpuid_max)
+		: "a" (registers->leaf & 0x80000000)
+		: "rbx", "rcx", "rdx");
+
+	if(registers->leaf > cpuid_max)
+	{
+		return 0;
+	}
+
+	asm volatile("cpuid" :
+		"=a" (registers->eax),
+		"=b" (registers->ebx),
+		"=c" (registers->ecx),
+		"=d" (registers->edx) :
+		"a" (registers->leaf),
+		"c" (registers->subleaf));
+
+	return 1;
+}
+
+static inline char *cpu_get_vendor_string(void)
+{
+	static char vendor_string[16];
+	cpuid_registers_t regs =
+	{
+		.leaf = CPUID_GET_VENDOR_STRING,
+		.subleaf = 0,
+		.eax = 0,
+		.ebx = 0,
+		.ecx = 0,
+		.edx = 0
+	};
+
+	cpuid(&regs);
+	snprintf(vendor_string, 13, "%.4s%.4s%.4s",
+		(char *)&regs.ebx, (char *)&regs.edx, (char *)&regs.ecx);
+
+	return vendor_string;
+}
+
+static inline void hlt(void)
+{
+	asm("hlt");
+}
+
+static inline void cli(void)
+{
+	asm("cli");
+}
+
+static inline void halt(void)
+{
+	for(;;)
+	{
+		hlt();
+	}
+}
+
+static inline void outb(uint16_t port, uint8_t value)
+{
+	asm volatile("outb %0, %1" : : "a"(value), "Nd"(port));
+}
+
+static inline uint8_t inb(uint16_t port)
+{
+	uint8_t ret;
+	asm volatile("inb %1, %0" : "=a"(ret) : "Nd"(port));
+	return ret;
+}
+
+static inline void io_wait(void)
+{
+	inb(0x80);
+}
+
+static inline bool is_la57_enabled(void)
+{
+	uint64_t cr4;
+	asm volatile("mov %%cr4, %0" : "=rax"(cr4));
+	return (cr4 >> 12) & 1;
+}
+
+static inline uintptr_t phys_to_higher_half_data(uintptr_t address)
+{
+	if (is_la57_enabled())
+	return HIGHER_HALF_DATA_LV5 + address;
+
+	return HIGHER_HALF_DATA_LV4 + address;
+}
+
+static inline uintptr_t phys_to_higher_half_code(uintptr_t address)
+{
+	return HIGHER_HALF_CODE + address;
+}
+
+static inline uintptr_t higher_half_data_to_phys(uintptr_t address)
+{
+	if (is_la57_enabled())
+	return address - HIGHER_HALF_DATA_LV5;
+
+	return address - HIGHER_HALF_DATA_LV4;
+}
+
+static inline uintptr_t higher_half_code_to_phys(uintptr_t address)
+{
+	return address - HIGHER_HALF_CODE;
+}
+
+void pmm_init(struct stivale2_struct *stivale2_struct);
+
 
 void gdt_init(void);
 void idt_init(void);

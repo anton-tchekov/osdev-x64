@@ -451,7 +451,7 @@ void pmm_init(struct stivale2_struct *stivale2_struct)
 	}
 
 	pmm_info.memory_size = highest_page;
-	pmm_info.max_pages = KB_TO_PAGES(pmm_info.memory_size);
+	pmm_info.max_pages = pmm_info.memory_size / 4;
 	pmm_info.used_pages = pmm_info.max_pages;
 	kernel_log(INFO, "Memory specifications:\n");
 	serial_tx_str(TERMINAL_PURPLE);

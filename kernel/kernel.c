@@ -7,9 +7,9 @@
 #include "shell/shell.h"
 #include "stdio.h"
 
-static void boot_any_key(int key, int ascii)
+static void boot_any_key(int key, int ascii, int released)
 {
-	if(ascii == KEY_RETURN)
+	if(ascii == '\n')
 	{
 		shell_init();
 	}
@@ -28,6 +28,6 @@ void kmain(struct stivale2_struct *stivale2_struct)
 	apic_init();
 	keyboard_init();
 	kernel_log(INFO, "Press enter to continue\n");
-	activate_keyboard_processing(boot_any_key);
+	keyboard_event_register(boot_any_key);
 	halt();
 }

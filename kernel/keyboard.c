@@ -1,281 +1,216 @@
 #include <stdint.h>
-#include "stivale2.h"
 #include "keyboard.h"
 #include "cpu.h"
 #include "stdio.h"
+#include "ctype.h"
 
-static void (*final_handler)(int, int);
+static KeyEvent key_event;
 
-static uint32_t standard_keycodes[] =
+static int key_to_codepoint(int k)
 {
-	KEY_UNKNOWN,
-	KEY_ESCAPE,
-	KEY_1,
-	KEY_2,
-	KEY_3,
-	KEY_4,
-	KEY_5,
-	KEY_6,
-	KEY_7,
-	KEY_8,
-	KEY_9,
-	KEY_0,
-	KEY_MINUS,
-	KEY_EQUAL,
-	KEY_BACKSPACE,
-	KEY_TAB,
-	KEY_Q,
-	KEY_W,
-	KEY_E,
-	KEY_R,
-	KEY_T,
-	KEY_Y,
-	KEY_U,
-	KEY_I,
-	KEY_O,
-	KEY_P,
-	KEY_LEFTBRACKET,
-	KEY_RIGHTBRACKET,
-	KEY_RETURN,
-	KEY_LCTRL,
-	KEY_A,
-	KEY_S,
-	KEY_D,
-	KEY_F,
-	KEY_G,
-	KEY_H,
-	KEY_J,
-	KEY_K,
-	KEY_L,
-	KEY_SEMICOLON,
-	KEY_QUOTE,
-	KEY_GRAVE,
-	KEY_LSHIFT,
-	KEY_BACKSLASH,
-	KEY_Z,
-	KEY_X,
-	KEY_C,
-	KEY_V,
-	KEY_B,
-	KEY_N,
-	KEY_M,
-	KEY_COMMA,
-	KEY_DOT,
-	KEY_SLASH,
-	KEY_RSHIFT,
-	KEY_KP_ASTERISK,
-	KEY_RALT,
-	KEY_SPACE,
-	KEY_CAPSLOCK,
-	KEY_F1,
-	KEY_F2,
-	KEY_F3,
-	KEY_F4,
-	KEY_F5,
-	KEY_F6,
-	KEY_F7,
-	KEY_F8,
-	KEY_F9,
-	KEY_F10,
-	KEY_KP_NUMLOCK,
-	KEY_SCROLLLOCK,
-	KEY_HOME,
-	KEY_KP_8,
-	KEY_PAGEUP,
-	KEY_KP_2,
-	KEY_KP_3,
-	KEY_KP_0,
-	KEY_KP_DECIMAL,
-	KEY_UNKNOWN,
-	KEY_UNKNOWN,
-	KEY_UNKNOWN,
-	KEY_F11,
-	KEY_F12
-};
+	int nomods = k & 0xFF;
 
-static uint8_t ctrl		= 0;
-static uint8_t alt		= 0;
-static uint8_t shift		= 0;
-
-static uint8_t capslock		= 0;
-static uint8_t numlock		= 0;
-static uint8_t scrolllock   = 0;
-
-void keyboard_init(void)
-{
-	pic_clear_mask(1);
-	while(inb(KB_CONTROLLER_COMMAND) & 0x1)
+	if(nomods == KEY_TAB)                             { return '\t'; }
+	else if(nomods == KEY_BACKSPACE)                  { return '\b'; }
+	else if(nomods == KEY_RETURN)                     { return '\n'; }
+	else if(nomods == KEY_SPACE)                      { return ' '; }
+	else if(k == (KEY_COMMA | MOD_SHIFT))             { return ';'; }
+	else if(k == (KEY_COMMA))                         { return ','; }
+	else if(k == (KEY_PERIOD | MOD_SHIFT))            { return ':'; }
+	else if(k == (KEY_PERIOD))                        { return '.'; }
+	else if(k == (KEY_SLASH | MOD_SHIFT))             { return '_'; }
+	else if(k == (KEY_SLASH))                         { return '-'; }
+	else if(k == (KEY_BACKSLASH | MOD_SHIFT))         { return '\''; }
+	else if(k == (KEY_BACKSLASH))                     { return '#'; }
+	else if(k == (KEY_R_BRACKET | MOD_SHIFT))         { return '*'; }
+	else if(k == (KEY_R_BRACKET | MOD_ALT_GR))        { return '~'; }
+	else if(k == (KEY_R_BRACKET))                     { return '+'; }
+	else if(k == (KEY_NON_US_BACKSLASH | MOD_SHIFT))  { return '>'; }
+	else if(k == (KEY_NON_US_BACKSLASH | MOD_ALT_GR)) { return '|'; }
+	else if(k == KEY_NON_US_BACKSLASH)                { return '<'; }
+	else if(k == (KEY_MINUS | MOD_SHIFT))             { return '?'; }
+	else if(k == (KEY_MINUS | MOD_ALT_GR))            { return '\\'; }
+	else if(k == (KEY_EQUALS | MOD_SHIFT))            { return '`'; }
+	else if(k == KEY_GRAVE)                           { return '^'; }
+	else if(nomods >= KEY_A && nomods <= KEY_Z)
 	{
-		inb(KB_CONTROLLER_DATA);
+		int c = nomods - KEY_A + 'a';
+
+		if(c == 'z') { c = 'y'; }
+		else if(c == 'y') { c = 'z'; }
+
+		if(k & MOD_ALT_GR)
+		{
+			if(c == 'q') { return '@'; }
+		}
+
+		if(k & MOD_SHIFT)
+		{
+			c = toupper(c);
+		}
+
+		return c;
+	}
+	else if(nomods >= KEY_1 && nomods <= KEY_0)
+	{
+		static const char numbers[] =
+			{ '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' };
+
+		static const char numbers_shift[] =
+			{ '!', '\"', 0, '$', '%', '&', '/', '(', ')', '=' };
+
+		static const char numbers_altgr[] =
+			{ 0, 0, 0, 0, 0, 0, '{', '[', ']', '}' };
+
+		int idx = nomods - KEY_1;
+
+		if(k & MOD_SHIFT)
+		{
+			return numbers_shift[idx];
+		}
+		else if(k & MOD_ALT_GR)
+		{
+			return numbers_altgr[idx];
+		}
+		else
+		{
+			return numbers[idx];
+		}
 	}
 
-	keyboard_send_command(0xF4);
-	kernel_log(INFO, "Keyboard driver initialized\n");
+	return 0;
 }
 
-void keyboard_send_command(uint8_t command_byte)
+static int scancode_to_key(int scancode)
 {
-	while(inb(KB_CONTROLLER_COMMAND) & 0x2)
+	switch(scancode)
 	{
-		outb(KB_CONTROLLER_DATA, command_byte);
+		case 0x01: return KEY_ESCAPE;
+		case 0x02: return KEY_1;
+		case 0x03: return KEY_2;
+		case 0x04: return KEY_3;
+		case 0x05: return KEY_4;
+		case 0x06: return KEY_5;
+		case 0x07: return KEY_6;
+		case 0x08: return KEY_7;
+		case 0x09: return KEY_8;
+		case 0x0A: return KEY_9;
+		case 0x0B: return KEY_0;
+		case 0x0C: return KEY_MINUS;
+		case 0x0D: return KEY_EQUALS;
+		case 0x0E: return KEY_BACKSPACE;
+		case 0x0F: return KEY_TAB;
+		case 0x10: return KEY_Q;
+		case 0x11: return KEY_W;
+		case 0x12: return KEY_E;
+		case 0x13: return KEY_R;
+		case 0x14: return KEY_T;
+		case 0x15: return KEY_Y;
+		case 0x16: return KEY_U;
+		case 0x17: return KEY_I;
+		case 0x18: return KEY_O;
+		case 0x19: return KEY_P;
+		case 0x1A: return KEY_L_BRACKET;
+		case 0x1B: return KEY_R_BRACKET;
+		case 0x1C: return KEY_RETURN;
+		case 0x1D: return KEY_L_CTRL;
+		case 0x1E: return KEY_A;
+		case 0x1F: return KEY_S;
+		case 0x20: return KEY_D;
+		case 0x21: return KEY_F;
+		case 0x22: return KEY_G;
+		case 0x23: return KEY_H;
+		case 0x24: return KEY_J;
+		case 0x25: return KEY_K;
+		case 0x26: return KEY_L;
+		case 0x27: return KEY_SEMICOLON;
+		case 0x28: return KEY_BACKSLASH;
+		case 0x29: return KEY_EQUALS;
+		case 0x2A: return KEY_L_SHIFT;
+		case 0x2B: return KEY_MINUS;
+		case 0x2C: return KEY_Z;
+		case 0x2D: return KEY_X;
+		case 0x2E: return KEY_C;
+		case 0x2F: return KEY_V;
+		case 0x30: return KEY_B;
+		case 0x31: return KEY_N;
+		case 0x32: return KEY_M;
+		case 0x33: return KEY_COMMA;
+		case 0x34: return KEY_PERIOD;
+		case 0x36: return KEY_R_SHIFT;
+		case 0x37: return KEY_KP_MULTIPLY;
+		case 0x38: return KEY_L_ALT;
+		case 0x39: return KEY_SPACE;
+		case 0x5B: return KEY_L_GUI;
 	}
+
+	return KEY_UNKNOWN;
 }
 
 void keyboard_irq_handler(void)
 {
-	uint8_t scancode = inb(KB_CONTROLLER_DATA);
-	KEY_INFO_t key_info;
+	static int _mods;
+	int scancode = inb(0x60);
+	int released = (scancode >> 7) & 1;
+	int key = scancode_to_key(scancode & 0x7F);
+	int mod = 0;
+	int codepoint;
 
-	key_info.keycode		= KEY_UNKNOWN;
-	key_info.ascii_character	= '\0';
-
-	if (scancode & 0x80)
+	if(key == KEY_L_ALT)
 	{
-		scancode -= 0x80;
-
-		uint32_t key = standard_keycodes[scancode];
-
-		if (key == KEY_LCTRL || key == KEY_RCTRL)
-			ctrl = 0;
-		else if (key == KEY_LALT || key == KEY_RALT)
-			alt = 0;
-		else if (key == KEY_LSHIFT || key == KEY_RSHIFT)
-			shift = 0;
+		mod = MOD_ALT;
 	}
-	else
+	else if(key == KEY_R_ALT)
 	{
-		uint32_t key = standard_keycodes[scancode];
-
-		key_info.keycode = key;
-
-		if (key == KEY_LCTRL || key == KEY_RCTRL)
-			ctrl = 1;
-		else if (key == KEY_LALT || key == KEY_RALT)
-			alt = 1;
-		else if (key == KEY_LSHIFT || key == KEY_RSHIFT)
-			shift = 1;
-		else if (key == KEY_CAPSLOCK)
-			capslock = capslock ? 0 : 1;
-		else if (key == KEY_KP_NUMLOCK)
-			numlock = numlock ? 0 : 1;
-		else if (key == KEY_SCROLLLOCK)
-			scrolllock = scrolllock ? 0 : 1;
-
-		else if (key <= 0x7F)
-			key_info.ascii_character = keycode_to_ascii(key);
+		mod = MOD_ALT_GR;
+	}
+	else if(key == KEY_L_SHIFT || key == KEY_R_SHIFT)
+	{
+		mod = MOD_SHIFT;
+	}
+	else if(key == KEY_L_CTRL || key == KEY_R_CTRL)
+	{
+		mod = MOD_CTRL;
+	}
+	else if(key == KEY_L_GUI || key == KEY_R_GUI)
+	{
+		mod = MOD_OS;
 	}
 
-	final_handler(key_info.keycode, key_info.ascii_character);
+	if(mod)
+	{
+		if(released)
+		{
+			_mods &= ~mod;
+		}
+		else
+		{
+			_mods |= mod;
+		}
+	}
+
+	key |= _mods;
+	codepoint = key_to_codepoint(key);
+	key_event(key, codepoint, released);
 }
 
-char keycode_to_ascii(KEYCODE_t keycode)
+void keyboard_init(void)
 {
-	uint8_t character = keycode;
-
-	if (shift && capslock)
+	pic_clear_mask(1);
+	while(inb(0x64) & 0x01)
 	{
-		if (character == '0')
-			character = KEY_RIGHTPARENTHESIS;
-		else if (character == '1')
-			character = KEY_EXCLAMATION;
-		else if (character == '2')
-			character = KEY_AT;
-		else if (character == '3')
-			character = KEY_HASH;
-		else if (character == '4')
-			character = KEY_DOLLAR;
-		else if (character == '5')
-			character = KEY_PERCENT;
-		else if (character == '6')
-			character = KEY_CARRET;
-		else if (character == '7')
-			character = KEY_AMPERSAND;
-		else if (character == '8')
-			character = KEY_ASTERISK;
-		else if (character == '9')
-			character = KEY_LEFTPARENTHESIS;
-		else if (character == KEY_COMMA)
-			character = KEY_LESS;
-		else if (character == KEY_DOT)
-			character = KEY_GREATER;
-		else if (character == KEY_SLASH)
-			character = KEY_QUESTION;
-		else if (character == KEY_SEMICOLON)
-			character = KEY_COLON;
-		else if (character == KEY_QUOTE)
-			character = KEY_QUOTEDOUBLE;
-		else if (character == KEY_LEFTBRACKET)
-			character = KEY_LEFTCURL;
-		else if (character == KEY_RIGHTBRACKET)
-			character = KEY_RIGHTCURL;
-		else if (character == KEY_GRAVE)
-			character = KEY_TILDE;
-		else if (character == KEY_MINUS)
-			character = KEY_UNDERSCORE;
-		else if (character == KEY_EQUAL)
-			character = KEY_PLUS;
-		else if (character == KEY_BACKSLASH)
-			character = KEY_BAR;
-	}
-	else if (shift && !capslock)
-	{
-		if (character >= 'a' && character <= 'z')
-			character -= 32;
-
-		if (character == '0')
-			character = KEY_RIGHTPARENTHESIS;
-		else if (character == '1')
-			character = KEY_EXCLAMATION;
-		else if (character == '2')
-			character = KEY_AT;
-		else if (character == '3')
-			character = KEY_HASH;
-		else if (character == '4')
-			character = KEY_DOLLAR;
-		else if (character == '5')
-			character = KEY_PERCENT;
-		else if (character == '6')
-			character = KEY_CARRET;
-		else if (character == '7')
-			character = KEY_AMPERSAND;
-		else if (character == '8')
-			character = KEY_ASTERISK;
-		else if (character == '9')
-			character = KEY_LEFTPARENTHESIS;
-		else if (character == KEY_COMMA)
-			character = KEY_LESS;
-		else if (character == KEY_DOT)
-			character = KEY_GREATER;
-		else if (character == KEY_SLASH)
-			character = KEY_QUESTION;
-		else if (character == KEY_SEMICOLON)
-			character = KEY_COLON;
-		else if (character == KEY_QUOTE)
-			character = KEY_QUOTEDOUBLE;
-		else if (character == KEY_LEFTBRACKET)
-			character = KEY_LEFTCURL;
-		else if (character == KEY_RIGHTBRACKET)
-			character = KEY_RIGHTCURL;
-		else if (character == KEY_GRAVE)
-			character = KEY_TILDE;
-		else if (character == KEY_MINUS)
-			character = KEY_UNDERSCORE;
-		else if (character == KEY_EQUAL)
-			character = KEY_PLUS;
-		else if (character == KEY_BACKSLASH)
-			character = KEY_BAR;
-
-	}
-	else if (!shift && capslock)
-	{
-		if (character >= 'a' && character <= 'z')
-			character -= 32;
+		inb(0x60);
 	}
 
-	return character;
+	while(inb(0x64) & 0x02)
+	{
+		outb(0x60, 0xF4);
+	}
+
+	kernel_log(INFO, "Keyboard driver initialized\n");
 }
 
-void activate_keyboard_processing(void *handler)
+void keyboard_event_register(KeyEvent handler)
 {
-	final_handler = handler;
+	key_event = handler;
 }

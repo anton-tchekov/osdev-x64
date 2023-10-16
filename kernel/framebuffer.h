@@ -1,6 +1,8 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 
+#include "stivale2.h"
+
 #define GFX_BLACK	0xFF3B4252
 #define GFX_RED		0xFFBF616A
 #define GFX_GREEN	0xFFA3BE8C
@@ -22,7 +24,7 @@ struct GFX_Struct
 	int glyph_height;
 };
 
-void framebuffer_init(struct stivale2_struct *stivale2_struct, uint32_t background_color);
+void framebuffer_init(struct stivale2_struct *s, uint32_t background_color);
 void framebuffer_draw_pixel(int x, int y, uint32_t color);
 void framebuffer_set_background_color(uint32_t background_color);
 void framebuffer_reset_screen(void);

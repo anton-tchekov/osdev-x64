@@ -11,10 +11,10 @@ extern uint8_t _binary_sfn_fonts_unifont_sfn_start;
 
 struct GFX_Struct gfx;
 
-void framebuffer_init(struct stivale2_struct *stivale2_struct, uint32_t background_color)
+void framebuffer_init(struct stivale2_struct *s, uint32_t background_color)
 {
-	struct stivale2_struct_tag_framebuffer *framebuffer_info = stivale2_get_tag(stivale2_struct,
-			STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
+	struct stivale2_struct_tag_framebuffer *framebuffer_info =
+		stivale2_get_tag(s, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
 
 	gfx.fb_addr		= framebuffer_info->framebuffer_addr;
 	gfx.fb_width	= framebuffer_info->framebuffer_width;

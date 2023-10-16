@@ -5,7 +5,9 @@ CC	= gcc
 AS	= @nasm
 LD	= ld
 
-CC_FLAGS	= -Wall -Wextra -O2 -pipe -ggdb
+CC_FLAGS	= -Wall -Wextra -Werror=implicit-function-declaration \
+	-Werror=discarded-qualifiers -O2 -pipe -ggdb
+
 AS_FLAGS	= -felf64
 LD_FLAGS	=
 

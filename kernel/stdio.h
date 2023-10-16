@@ -13,7 +13,7 @@ typedef enum {
 	ERROR
 } STATUS;
 
-void printk(uint32_t foreground_color, char *fmt, ...);
+void printk(uint32_t foreground_color, const char *fmt, ...);
 void debug(char *fmt, ...);
 void kernel_log_impl(char *file, int line_nr, STATUS status, char *fmt, ...);
 

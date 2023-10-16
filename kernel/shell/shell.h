@@ -7,8 +7,6 @@ void shell_handle_enter (void);
 
 void shell_clear_buffer ();
 
-void event_key (int key, int ascii);
-
 void puts (const char* line, int x, int y, int c);
 
 #endif

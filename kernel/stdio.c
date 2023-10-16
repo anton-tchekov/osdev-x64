@@ -5,7 +5,7 @@
 #include "kprintf.h"
 #include "stdio.h"
 
-void printk(uint32_t foreground_color, char *fmt, ...)
+void printk(uint32_t foreground_color, const char *fmt, ...)
 {
 	char printk_buffer[512];
 	va_list ptr;
