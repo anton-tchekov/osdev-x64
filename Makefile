@@ -49,7 +49,7 @@ debug: $(ISO_IMAGE)
 	qemu-system-x86_64 -M q35 -m 2G -serial stdio -cdrom $(ISO_IMAGE) -s -S
 
 limine:
-	make -C third_party/limine
+	make -C limine
 
 $(TARGET): $(OBJ)
 	$(LD) -r -b binary -o src/font_unifont.o sfn_fonts/unifont.sfn
@@ -61,15 +61,15 @@ $(ISO_IMAGE): limine $(TARGET)
 	rm -rf iso_root
 	mkdir -p iso_root
 	cp $(TARGET) 												\
-		limine.cfg third_party/limine/limine.sys				\
-		third_party/limine/limine-cd.bin 						\
-		third_party/limine/limine-eltorito-efi.bin iso_root/
+		limine.cfg limine/limine.sys				\
+		limine/limine-cd.bin 						\
+		limine/limine-eltorito-efi.bin iso_root/
 	xorriso -as mkisofs -b limine-cd.bin							\
 		-no-emul-boot -boot-load-size 4 -boot-info-table			\
 		--efi-boot limine-eltorito-efi.bin							\
 		-efi-boot-part --efi-boot-image --protective-msdos-label	\
 		iso_root -o $(ISO_IMAGE)
-	third_party/limine/limine-install $(ISO_IMAGE)
+	limine/limine-install $(ISO_IMAGE)
 	rm -rf iso_root
 
 %.o: %.c
