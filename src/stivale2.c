@@ -25,24 +25,24 @@ static struct stivale2_header_tag_framebuffer framebuffer_hdr_tag =
 __attribute__((section(".stivale2hdr"), used))
 static struct stivale2_header stivale_hdr =
 {
-	.entry_point	= 0,
-	.stack		= (uintptr_t)stack + sizeof(stack),
-	.flags		= (1 << 1) | (1 << 2),
-	.tags		= (uintptr_t)&framebuffer_hdr_tag
+	.entry_point = 0,
+	.stack = (uintptr_t)stack + sizeof(stack),
+	.flags = (1 << 1) | (1 << 2),
+	.tags = (uintptr_t)&framebuffer_hdr_tag
 };
 
 void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id)
 {
-	struct stivale2_tag *current_tag = (void *)stivale2_struct->tags;
-
-	for (;;)
+	struct stivale2_tag *current_tag = stivale2_struct->tags;
+	while(current_tag)
 	{
-		if (current_tag == NULL)
-			return NULL;
-
-		if (current_tag->identifier == id)
+		if(current_tag->identifier == id)
+		{
 			return current_tag;
+		}
 
-		current_tag = (void *)current_tag->next;
+		current_tag = current_tag->next;
 	}
+
+	return NULL;
 }
