@@ -15,6 +15,8 @@ typedef struct
 
 static Shell shell;
 
+static void shell_handle_command (char* cmd);
+
 void shell_init(){
     shell.Cursor = 0;
     shell.Line = 0;
@@ -44,6 +46,9 @@ void event_key (int key, int ascii) {
         printk(GFX_RED, "%c", ascii);
     } else if(ascii == '\r') {
         shell_handle_enter();
+    } else if(ascii == '\b' && shell.Cursor > 0) {
+        shell.Buffer[--shell.Cursor] = 0;
+        printk(GFX_RED, "\b");
     }
 }
 
@@ -54,9 +59,30 @@ void shell_handle_enter () {
     shell_clear_buffer();
 }
 
-void shell_handle_command (const char* cmd) {
-    // HANDLE COMMAND
-    printk(GFX_WHITE, cmd);
+static void shell_handle_command (char* cmd) {
+    char *argv[16];
+    char *p = cmd;
+    int argc = 0;
+
+    printk(GFX_WHITE, "here!\n");
+    while(*p)
+    {
+        while(isspace(*p)) {
+            ++p;
+        }
+
+        argv[argc++] = p;
+        while(*p && !isspace(*p)) {
+            ++p;
+        }
+
+        *p++ = '\0';
+    }
+
+    printk(GFX_WHITE, "argc = %d\n", argc);
+    for(int i = 0; i < argc; ++i) {
+        printk(GFX_WHITE, "%d. %s\n", i, argv[i]);
+    }
 }
 
 void shell_clear_buffer () {

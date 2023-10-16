@@ -5,8 +5,6 @@ void shell_init(void);
 
 void shell_handle_enter (void);
 
-void shell_handle_command (const char* cmd);
-
 void shell_clear_buffer ();
 
 void event_key (int key, int ascii);
