@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "kprintf.h"
+#include "stivale2.h"
 
 #define SPURIOUS_INTERRUPT 255
 
@@ -257,36 +258,36 @@ struct GDT_Descriptor
 
 struct TSS
 {
-	uint32_t	reserved0;
-	uint64_t	rsp0;
-	uint64_t	rsp1;
-	uint64_t	rsp2;
-	uint64_t	reserved1;
-	uint64_t	ist1;
-	uint64_t	ist2;
-	uint64_t	ist3;
-	uint64_t	ist4;
-	uint64_t	ist5;
-	uint64_t	ist6;
-	uint64_t	ist7;
-	uint64_t	reserved2;
-	uint16_t	reserved3;
-	uint16_t	iopb_offset;
+	uint32_t reserved0;
+	uint64_t rsp0;
+	uint64_t rsp1;
+	uint64_t rsp2;
+	uint64_t reserved1;
+	uint64_t ist1;
+	uint64_t ist2;
+	uint64_t ist3;
+	uint64_t ist4;
+	uint64_t ist5;
+	uint64_t ist6;
+	uint64_t ist7;
+	uint64_t reserved2;
+	uint16_t reserved3;
+	uint16_t iopb_offset;
 } __attribute__((packed));
 
 __attribute__((aligned(4096)))
 struct GDT
 {
-	struct GDT_Descriptor   null;
-	struct GDT_Descriptor   kernel_code;
-	struct GDT_Descriptor   kernel_data;
-	struct GDT_Descriptor   null2;
-	struct GDT_Descriptor   user_data;
-	struct GDT_Descriptor   user_code;
-	struct GDT_Descriptor   ovmf_data;
-	struct GDT_Descriptor   ovmf_code;
-	struct GDT_Descriptor   tss_low;
-	struct GDT_Descriptor   tss_high;
+	struct GDT_Descriptor null;
+	struct GDT_Descriptor kernel_code;
+	struct GDT_Descriptor kernel_data;
+	struct GDT_Descriptor null2;
+	struct GDT_Descriptor user_data;
+	struct GDT_Descriptor user_code;
+	struct GDT_Descriptor ovmf_data;
+	struct GDT_Descriptor ovmf_code;
+	struct GDT_Descriptor tss_low;
+	struct GDT_Descriptor tss_high;
 } __attribute__((packed));
 
 struct GDT_Pointer
@@ -295,17 +296,15 @@ struct GDT_Pointer
 	uint64_t base;
 } __attribute__((packed));
 
-void gdt_init(void);
-
 struct IDT_Descriptor
 {
-	uint16_t	offset_15_0;
-	uint16_t	selector;
-	uint8_t 	ist;
-	uint8_t 	type_and_attributes;
-	uint16_t	offset_31_16;
-	uint32_t	offset_63_32;
-	uint32_t	zero;
+	uint16_t offset_15_0;
+	uint16_t selector;
+	uint8_t ist;
+	uint8_t type_and_attributes;
+	uint16_t offset_31_16;
+	uint32_t offset_63_32;
+	uint32_t zero;
 } __attribute__((packed));
 
 struct IDT_Pointer
@@ -314,8 +313,8 @@ struct IDT_Pointer
 	uint64_t base;
 } __attribute__((packed));
 
+void gdt_init(void);
 void idt_init(void);
-
 void pic_disable(void);
 void pic_remap(void);
 void pic_set_mask(unsigned char irq_line);

@@ -4,7 +4,7 @@
 #include "cpu.h"
 #include "stdio.h"
 
-static void (*final_handler)(KEY_INFO_t);
+static void (*final_handler)(int, int);
 
 static uint32_t standard_keycodes[] =
 {
@@ -165,7 +165,7 @@ void keyboard_irq_handler(void)
 			key_info.ascii_character = keycode_to_ascii(key);
 	}
 
-	final_handler(key_info);
+	final_handler(key_info.keycode, key_info.ascii_character);
 }
 
 char keycode_to_ascii(KEYCODE_t keycode)

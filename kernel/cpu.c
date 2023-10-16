@@ -6,13 +6,13 @@
 #include "stdio.h"
 #include "string.h"
 
-#define PIC1		0x20
-#define PIC2		0xA0
-#define PIC1_COMMAND	PIC1
-#define PIC1_DATA	(PIC1+1)
-#define PIC2_COMMAND	PIC2
-#define PIC2_DATA	(PIC2+1)
-#define ICW4_8086	0x01
+#define PIC1           0x20
+#define PIC2           0xA0
+#define PIC1_COMMAND   PIC1
+#define PIC1_DATA      (PIC1 + 1)
+#define PIC2_COMMAND   PIC2
+#define PIC2_DATA      (PIC2 + 1)
+#define ICW4_8086      0x01
 
 extern void _load_gdt_and_tss_asm(struct GDT_Pointer *ptr);
 extern void _load_idt_asm(struct IDT_Pointer *ptr);
@@ -23,7 +23,6 @@ static struct GDT gdt;
 static struct GDT_Pointer gdt_pointer;
 static struct IDT_Descriptor idt[256];
 static struct IDT_Pointer idt_pointer;
-
 
 struct PMM_Info_Struct
 {
@@ -429,7 +428,6 @@ void pmm_init(struct stivale2_struct *stivale2_struct)
 
 	pmm_info.memory_map = memory_map;
 	kernel_log(INFO, "Memory map layout:\n");
-
 	for(i = 0; i < pmm_info.memory_map->entries; ++i)
 	{
 		current_entry = &pmm_info.memory_map->memmap[i];

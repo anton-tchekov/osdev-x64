@@ -1,5 +1,5 @@
-#ifndef PRINTK_H
-#define PRINTK_H
+#ifndef __STDIO_H__
+#define __STDIO_H__
 
 #include <stdint.h>
 #include "framebuffer.h"

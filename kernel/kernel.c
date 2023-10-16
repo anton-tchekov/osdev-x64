@@ -7,9 +7,9 @@
 #include "shell.h"
 #include "stdio.h"
 
-static void boot_any_key(KEY_INFO_t key_info)
+static void boot_any_key(int key, int ascii)
 {
-	if(key_info.ascii_character == KEY_RETURN)
+	if(ascii == KEY_RETURN)
 	{
 		shell_screen_init();
 	}
