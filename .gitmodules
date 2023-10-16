@@ -1,0 +1,3 @@
+[submodule "modules/atfs"]
+	path = modules/atfs
+	url = git@github.com:anton-tchekov/atfs.git

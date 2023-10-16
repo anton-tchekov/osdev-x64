@@ -1,5 +1,5 @@
 *.d
 *.elf
-.idea/*.elf
+.idea/
 *.iso
 *.o
