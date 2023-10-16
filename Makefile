@@ -1,124 +1,87 @@
-# Nuke built-in rules and variables.
-override MAKEFLAGS += -rR
+TARGET		:= src/kernel.elf
+ISO_IMAGE	:= disk.iso
 
-# This is the name that our final kernel executable will have.
-# Change as needed.
-override KERNEL := myos.elf
+CC	= gcc
+AS	= @nasm
+LD	= ld
 
-# Convenience macro to reliably declare user overridable variables.
-define DEFAULT_VAR =
-    ifeq ($(origin $1),default)
-        override $(1) := $(2)
-    endif
-    ifeq ($(origin $1),undefined)
-        override $(1) := $(2)
-    endif
-endef
+CC_FLAGS	= -Wall -Wextra -O2 -pipe -ggdb
+AS_FLAGS	= -felf64
+LD_FLAGS	=
 
-# It is highly recommended to use a custom built cross toolchain to build a kernel.
-# We are only using "cc" as a placeholder here. It may work by using
-# the host system's toolchain, but this is not guaranteed.
-override DEFAULT_CC := cc
-$(eval $(call DEFAULT_VAR,CC,$(DEFAULT_CC)))
+INTERNAL_LD_FLAGS :=		\
+	-Tsrc/linker.ld	\
+	-nostdlib				\
+	-static					\
+	-zmax-page-size=0x1000	\
+	--no-dynamic-linker		\
+	-ztext
+	# -pie
 
-# Same thing for "ld" (the linker).
-override DEFAULT_LD := ld
-$(eval $(call DEFAULT_VAR,LD,$(DEFAULT_LD)))
+INTERNAL_CC_FLAGS :=		\
+	-Isrc/			\
+	-std=gnu11				\
+	-ffreestanding			\
+	-fno-stack-protector	\
+	-fno-pic -fpie			\
+	-mno-80387				\
+	-mno-mmx				\
+	-mno-3dnow				\
+	-mno-sse				\
+	-mno-sse2				\
+	-mno-red-zone
 
-# User controllable C flags.
-override DEFAULT_CFLAGS := -g -O2 -pipe
-$(eval $(call DEFAULT_VAR,CFLAGS,$(DEFAULT_CFLAGS)))
+C_FILES		:= $(shell find src/ -type f -name '*.c')
+AS_FILES	:= $(shell find src/ -type f -name '*.s')
 
-# User controllable C preprocessor flags. We set none by default.
-override DEFAULT_CPPFLAGS :=
-$(eval $(call DEFAULT_VAR,CPPFLAGS,$(DEFAULT_CPPFLAGS)))
+C_OBJ	= $(C_FILES:.c=.o)
+AS_OBJ	= $(AS_FILES:.s=.o)
+OBJ		= $(C_OBJ) $(AS_OBJ)
 
-# User controllable nasm flags.
-override DEFAULT_NASMFLAGS := -F dwarf -g
-$(eval $(call DEFAULT_VAR,NASMFLAGS,$(DEFAULT_NASMFLAGS)))
+.PHONY: all clean format run
 
-# User controllable linker flags. We set none by default.
-override DEFAULT_LDFLAGS :=
-$(eval $(call DEFAULT_VAR,LDFLAGS,$(DEFAULT_LDFLAGS)))
+all: $(TARGET)
 
-# Internal C flags that should not be changed by the user.
-override CFLAGS += \
-    -Wall \
-    -Wextra \
-    -std=gnu11 \
-    -ffreestanding \
-    -fno-stack-protector \
-    -fno-stack-check \
-    -fno-lto \
-    -fno-PIE \
-    -fno-PIC \
-    -m64 \
-    -march=x86-64 \
-    -mabi=sysv \
-    -mno-80387 \
-    -mno-mmx \
-    -mno-sse \
-    -mno-sse2 \
-    -mno-red-zone \
-    -mcmodel=kernel
+run: $(ISO_IMAGE)
+	qemu-system-x86_64 -M q35 -m 2G -serial stdio -cdrom $(ISO_IMAGE)
 
-# Internal C preprocessor flags that should not be changed by the user.
-override CPPFLAGS := \
-    -I. \
-    $(CPPFLAGS) \
-    -MMD \
-    -MP
+debug: $(ISO_IMAGE)
+	qemu-system-x86_64 -M q35 -m 2G -serial stdio -cdrom $(ISO_IMAGE) -s -S
 
-# Internal linker flags that should not be changed by the user.
-override LDFLAGS += \
-    -nostdlib \
-    -static \
-    -m elf_x86_64 \
-    -z max-page-size=0x1000 \
-    -T linker.ld
+limine:
+	make -C third_party/limine
 
-# Check if the linker supports -no-pie and enable it if it does.
-ifeq ($(shell $(LD) --help 2>&1 | grep 'no-pie' >/dev/null 2>&1; echo $$?),0)
-    override LDFLAGS += -no-pie
-endif
+$(TARGET): $(OBJ)
+	$(LD) -r -b binary -o src/font_unifont.o sfn_fonts/unifont.sfn
+	$(LD) src/font_unifont.o $(OBJ) $(LD_FLAGS) $(INTERNAL_LD_FLAGS) -o $@
+	@printf "\n\n \(^_^)/ Kernel compiled and linked successfully \(^_^)/ \n\n"
 
-# Internal nasm flags that should not be changed by the user.
-override NASMFLAGS += \
-    -Wall \
-    -f elf64
 
-# Use "find" to glob all *.c, *.S, and *.asm files in the tree and obtain the
-# object and header dependency file names.
-override CFILES := $(shell find -L . -type f -name '*.c' | grep -v 'limine/')
-override ASFILES := $(shell find -L . -type f -name '*.S' | grep -v 'limine/')
-override NASMFILES := $(shell find -L . -type f -name '*.asm' | grep -v 'limine/')
-override OBJ := $(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o)
-override HEADER_DEPS := $(CFILES:.c=.c.d) $(ASFILES:.S=.S.d)
+$(ISO_IMAGE): limine $(TARGET)
+	rm -rf iso_root
+	mkdir -p iso_root
+	cp $(TARGET) 												\
+		limine.cfg third_party/limine/limine.sys				\
+		third_party/limine/limine-cd.bin 						\
+		third_party/limine/limine-eltorito-efi.bin iso_root/
+	xorriso -as mkisofs -b limine-cd.bin							\
+		-no-emul-boot -boot-load-size 4 -boot-info-table			\
+		--efi-boot limine-eltorito-efi.bin							\
+		-efi-boot-part --efi-boot-image --protective-msdos-label	\
+		iso_root -o $(ISO_IMAGE)
+	third_party/limine/limine-install $(ISO_IMAGE)
+	rm -rf iso_root
 
-# Default target.
-.PHONY: all
-all: $(KERNEL)
+%.o: %.c
+	@printf " [CC]\t$<\n";
+	$(CC) $(CC_FLAGS) $(INTERNAL_CC_FLAGS) -c $< -o $@
 
-# Link rules for the final kernel executable.
-$(KERNEL): $(OBJ)
-	$(LD) $(OBJ) $(LDFLAGS) -o $@
+%.o: %.s
+	@printf " [AS]\t$<\n";
+	$(AS) $(AS_FLAGS) $< -o $@
 
-# Include header dependencies.
--include $(HEADER_DEPS)
-
-# Compilation rules for *.c files.
-%.c.o: %.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
-
-# Compilation rules for *.S files.
-%.S.o: %.S
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
-
-# Compilation rules for *.asm (nasm) files.
-%.asm.o: %.asm
-	nasm $(NASMFLAGS) $< -o $@
-
-# Remove object files and the final executable.
-.PHONY: clean
 clean:
-	rm -rf $(KERNEL) $(OBJ) $(HEADER_DEPS)
+	rm -rf $(TARGET) $(OBJ) $(ISO_IMAGE)
+
+format:
+	astyle --mode=c -nA1fpxgHxbxjxpS $(C_FILES)

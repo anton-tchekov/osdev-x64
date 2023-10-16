@@ -1,6 +1,5 @@
-*.o
 *.d
-*.iso
 *.elf
-
-.idea/
+.idea/*.elf
+*.iso
+*.o
