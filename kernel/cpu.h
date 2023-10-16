@@ -320,6 +320,6 @@ void pic_disable(void);
 void pic_remap(void);
 void pic_set_mask(unsigned char irq_line);
 void pic_clear_mask(unsigned char irq_line);
-void pic_signal_EOI(uint64_t isr_number);
+void pic_signal_eoi(uint64_t isr_number);
 
 #endif

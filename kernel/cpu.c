@@ -6,122 +6,168 @@
 #include "stdio.h"
 #include "string.h"
 
+#define PIC1		0x20
+#define PIC2		0xA0
+#define PIC1_COMMAND	PIC1
+#define PIC1_DATA	(PIC1+1)
+#define PIC2_COMMAND	PIC2
+#define PIC2_DATA	(PIC2+1)
+#define ICW4_8086	0x01
+
 extern void _load_gdt_and_tss_asm(struct GDT_Pointer *ptr);
+extern void _load_idt_asm(struct IDT_Pointer *ptr);
+extern uintptr_t _isr_names_asm[];
 
-static struct TSS		tss;
-static struct GDT		gdt;
-static struct GDT_Pointer   gdt_pointer;
+static struct TSS tss;
+static struct GDT gdt;
+static struct GDT_Pointer gdt_pointer;
+static struct IDT_Descriptor idt[256];
+static struct IDT_Pointer idt_pointer;
 
-void create_descriptors(void)
+
+struct PMM_Info_Struct
 {
+	size_t memory_size;
+	uint32_t max_pages;
+	uint32_t used_pages;
+	struct stivale2_struct_tag_memmap *memory_map;
+};
 
-	gdt.null.limit_15_0					= 0;
-	gdt.null.base_15_0					= 0;
-	gdt.null.base_23_16					= 0;
-	gdt.null.type					= 0x00;
-	gdt.null.limit_19_16_and_flags			= 0x00;
-	gdt.null.base_31_24					= 0;
+struct PMM_Info_Struct pmm_info;
 
-	gdt.kernel_code.limit_15_0				= 0;
-	gdt.kernel_code.base_15_0				= 0;
-	gdt.kernel_code.base_23_16				= 0;
-	gdt.kernel_code.type				= 0x9A;
-	gdt.kernel_code.limit_19_16_and_flags		= 0xA0;
-	gdt.kernel_code.base_31_24				= 0;
-
-	gdt.kernel_data.limit_15_0				= 0;
-	gdt.kernel_data.base_15_0				= 0;
-	gdt.kernel_data.base_23_16				= 0;
-	gdt.kernel_data.type				= 0x92;
-	gdt.kernel_data.limit_19_16_and_flags		= 0xA0;
-	gdt.kernel_data.base_31_24				= 0;
-
-	gdt.null2.limit_15_0				= 0;
-	gdt.null2.base_15_0						= 0;
-	gdt.null2.base_23_16					= 0;
-	gdt.null2.type					= 0x00;
-	gdt.null2.limit_19_16_and_flags			= 0x00;
-	gdt.null2.base_31_24				= 0;
-
-	gdt.user_data.limit_15_0				= 0;
-	gdt.user_data.base_15_0				= 0;
-	gdt.user_data.base_23_16				= 0;
-	gdt.user_data.type					= 0x92;
-	gdt.user_data.limit_19_16_and_flags			= 0xA0;
-	gdt.user_data.base_31_24				= 0;
-
-	gdt.user_code.base_15_0				= 0;
-	gdt.user_code.base_23_16				= 0;
-	gdt.user_code.type					= 0x9A;
-	gdt.user_code.limit_19_16_and_flags			= 0xA0;
-	gdt.user_code.base_31_24				= 0;
-
-	gdt.ovmf_data.base_23_16				= 0;
-	gdt.ovmf_data.type					= 0x92;
-	gdt.ovmf_data.limit_19_16_and_flags			= 0xA0;
-	gdt.ovmf_data.base_31_24				= 0;
-
-	gdt.ovmf_code.limit_15_0				= 0;
-	gdt.ovmf_code.base_15_0				= 0;
-	gdt.ovmf_code.base_23_16				= 0;
-	gdt.ovmf_code.type					= 0x9A;
-	gdt.ovmf_code.limit_19_16_and_flags			= 0xA0;
-	gdt.ovmf_code.base_31_24				= 0;
-
-	gdt.tss_low.base_15_0				= 0;
-	gdt.tss_low.base_23_16				= 0;
-	gdt.tss_low.type					= 0x89;
-	gdt.tss_low.limit_19_16_and_flags			= 0xA0;
-	gdt.tss_low.base_31_24				= 0;
-
-	gdt.tss_high.limit_15_0				= 0;
-	gdt.tss_high.base_15_0				= 0;
-	gdt.tss_high.base_23_16				= 0;
-	gdt.tss_high.type					= 0x00;
-	gdt.tss_high.limit_19_16_and_flags			= 0x00;
-	gdt.tss_high.base_31_24				= 0;
-}
+static const char *exceptions[] =
+{
+	"Divide Error",
+	"Debug Exception",
+	"NMI Interrupt",
+	"Breakpoint",
+	"Overflow",
+	"Bound Range Exceeded",
+	"Invalid Opcode (Undefined Opcode)",
+	"Device Not Available (No Math Coprocessor)",
+	"Double Fault",
+	"Coprocessor Segment Overrun (reserved)",
+	"Invalid TSS",
+	"Segment Not Present",
+	"Stack-Segment Fault",
+	"General Protection",
+	"Page Fault",
+	"Intel reserved",
+	"x87 FPU Floating-Point Error (Math Fault)",
+	"Alignment Check",
+	"Machine Check",
+	"SIMD Floating-Point Exception",
+	"Virtualization Exception",
+	"Control Protection Exception",
+	"Intel reserved",
+	"Intel reserved",
+	"Intel reserved",
+	"Intel reserved",
+	"Intel reserved",
+	"Intel reserved",
+	"Intel reserved",
+	"Intel reserved",
+	"Intel reserved",
+	"Intel reserved"
+};
 
 void gdt_init(void)
 {
-	create_descriptors();
+	gdt.null.limit_15_0 = 0;
+	gdt.null.base_15_0 = 0;
+	gdt.null.base_23_16 = 0;
+	gdt.null.type = 0x00;
+	gdt.null.limit_19_16_and_flags = 0x00;
+	gdt.null.base_31_24 = 0;
+
+	gdt.kernel_code.limit_15_0 = 0;
+	gdt.kernel_code.base_15_0 = 0;
+	gdt.kernel_code.base_23_16 = 0;
+	gdt.kernel_code.type = 0x9A;
+	gdt.kernel_code.limit_19_16_and_flags = 0xA0;
+	gdt.kernel_code.base_31_24 = 0;
+
+	gdt.kernel_data.limit_15_0 = 0;
+	gdt.kernel_data.base_15_0 = 0;
+	gdt.kernel_data.base_23_16 = 0;
+	gdt.kernel_data.type = 0x92;
+	gdt.kernel_data.limit_19_16_and_flags = 0xA0;
+	gdt.kernel_data.base_31_24 = 0;
+
+	gdt.null2.limit_15_0 = 0;
+	gdt.null2.base_15_0 = 0;
+	gdt.null2.base_23_16 = 0;
+	gdt.null2.type = 0x00;
+	gdt.null2.limit_19_16_and_flags = 0x00;
+	gdt.null2.base_31_24 = 0;
+
+	gdt.user_data.limit_15_0 = 0;
+	gdt.user_data.base_15_0 = 0;
+	gdt.user_data.base_23_16 = 0;
+	gdt.user_data.type = 0x92;
+	gdt.user_data.limit_19_16_and_flags = 0xA0;
+	gdt.user_data.base_31_24 = 0;
+
+	gdt.user_code.base_15_0 = 0;
+	gdt.user_code.base_23_16 = 0;
+	gdt.user_code.type = 0x9A;
+	gdt.user_code.limit_19_16_and_flags = 0xA0;
+	gdt.user_code.base_31_24 = 0;
+
+	gdt.ovmf_data.base_23_16 = 0;
+	gdt.ovmf_data.type = 0x92;
+	gdt.ovmf_data.limit_19_16_and_flags = 0xA0;
+	gdt.ovmf_data.base_31_24 = 0;
+
+	gdt.ovmf_code.limit_15_0 = 0;
+	gdt.ovmf_code.base_15_0 = 0;
+	gdt.ovmf_code.base_23_16 = 0;
+	gdt.ovmf_code.type = 0x9A;
+	gdt.ovmf_code.limit_19_16_and_flags = 0xA0;
+	gdt.ovmf_code.base_31_24 = 0;
+
+	gdt.tss_low.base_15_0 = 0;
+	gdt.tss_low.base_23_16 = 0;
+	gdt.tss_low.type = 0x89;
+	gdt.tss_low.limit_19_16_and_flags = 0xA0;
+	gdt.tss_low.base_31_24 = 0;
+
+	gdt.tss_high.limit_15_0 = 0;
+	gdt.tss_high.base_15_0 = 0;
+	gdt.tss_high.base_23_16 = 0;
+	gdt.tss_high.type = 0x00;
+	gdt.tss_high.limit_19_16_and_flags = 0x00;
+	gdt.tss_high.base_31_24 = 0;
 
 	for (uint64_t i = 0; i < sizeof(tss); i++)
 		((uint8_t *)(void *)&tss)[i] = 0;
 
-	uint64_t tss_base = ((uint64_t)&tss);
+	uint64_t tss_base = (uint64_t)&tss;
 
-	gdt.tss_low.base_15_0   = tss_base		& 0xffff;
-	gdt.tss_low.base_23_16  = (tss_base >> 16)	& 0xff;
-	gdt.tss_low.base_31_24  = (tss_base >> 24)	& 0xff;
-	gdt.tss_low.limit_15_0  = sizeof(tss);
-	gdt.tss_high.limit_15_0 = (tss_base >> 32)	& 0xffff;
-	gdt.tss_high.base_15_0  = (tss_base >> 48)	& 0xffff;
+	gdt.tss_low.base_15_0 = tss_base & 0xFFFF;
+	gdt.tss_low.base_23_16 = (tss_base >> 16) & 0xFF;
+	gdt.tss_low.base_31_24 = (tss_base >> 24) & 0xFF;
+	gdt.tss_low.limit_15_0 = sizeof(tss);
+	gdt.tss_high.limit_15_0 = (tss_base >> 32) & 0xFFFF;
+	gdt.tss_high.base_15_0 = (tss_base >> 48) & 0xFFFF;
 
-	gdt_pointer.limit	= sizeof(gdt) - 1;
-	gdt_pointer.base	= (uint64_t)&gdt;
+	gdt_pointer.limit = sizeof(gdt) - 1;
+	gdt_pointer.base = (uint64_t)&gdt;
 
 	_load_gdt_and_tss_asm(&gdt_pointer);
 	kernel_log(INFO, "GDT initialized\n");
 }
 
-extern void		_load_idt_asm(struct IDT_Pointer *ptr);
-extern uintptr_t	_isr_names_asm[];
-
-static struct IDT_Descriptor	idt[256];
-static struct IDT_Pointer	idt_pointer;
-
-void create_descriptor(uint8_t index, uint8_t type_and_attributes)
+static void create_descriptor(uint8_t index, uint8_t type_and_attributes)
 {
 	uint64_t offset = _isr_names_asm[index];
-
-	idt[index].offset_15_0		= offset & 0xFFFF;
-	idt[index].selector			= 0x08;
-	idt[index].ist			= 0;
-	idt[index].type_and_attributes  = type_and_attributes;
-	idt[index].offset_31_16		= (offset >> 16) & 0xFFFF;
-	idt[index].offset_63_32		= (offset >> 32) & 0xFFFFFFFF;
-	idt[index].zero			= 0;
+	idt[index].offset_15_0 = offset & 0xFFFF;
+	idt[index].selector = 0x08;
+	idt[index].ist = 0;
+	idt[index].type_and_attributes = type_and_attributes;
+	idt[index].offset_31_16 = (offset >> 16) & 0xFFFF;
+	idt[index].offset_63_32 = (offset >> 32) & 0xFFFFFFFF;
+	idt[index].zero = 0;
 }
 
 void idt_init(void)
@@ -188,15 +234,6 @@ void idt_init(void)
 	_load_idt_asm(&idt_pointer);
 	kernel_log(INFO, "IDT initialized\n");
 }
-
-
-#define PIC1		0x20
-#define PIC2		0xA0
-#define PIC1_COMMAND	PIC1
-#define PIC1_DATA	(PIC1+1)
-#define PIC2_COMMAND	PIC2
-#define PIC2_DATA	(PIC2+1)
-#define ICW4_8086	0x01
 
 void pic_disable(void)
 {
@@ -276,7 +313,7 @@ void pic_clear_mask(uint8_t irq_line)
 	outb(port, value);
 }
 
-void pic_signal_EOI(uint64_t isr_number)
+void pic_signal_eoi(uint64_t isr_number)
 {
 	if(isr_number >= 40)
 	{
@@ -285,42 +322,6 @@ void pic_signal_EOI(uint64_t isr_number)
 
 	outb(PIC1_COMMAND, 0x20);
 }
-
-static const char *exceptions[] =
-{
-	"#DE: Divide Error",
-	"#DB: Debug Exception",
-	"-  : NMI Interrupt",
-	"#BP: Breakpoint",
-	"#OF: Overflow",
-	"#BR: BOUND Range Exceeded",
-	"#UD: Invalid Opcode (Undefined Opcode)",
-	"#NM: Device Not Available (No Math Coprocessor)",
-	"#DF: Double Fault",
-	"- : Coprocessor Segment Overrun (reserved)",
-	"#TS: Invalid TSS",
-	"#NP: Segment Not Present",
-	"#SS: Stack-Segment Fault",
-	"#GP: General Protection",
-	"#PF: Page Fault",
-	"- : (Intel reserved. Do not use.)",
-	"#MF: x87 FPU Floating-Point Error (Math Fault)",
-	"#AC: Alignment Check",
-	"#MC: Machine Check",
-	"#XM: SIMD Floating-Point Exception",
-	"#VE: Virtualization Exception",
-	"#CP: Control Protection Exception",
-	"- : Intel reserved. Do not use.",
-	"- : Intel reserved. Do not use.",
-	"- : Intel reserved. Do not use.",
-	"- : Intel reserved. Do not use.",
-	"- : Intel reserved. Do not use.",
-	"- : Intel reserved. Do not use.",
-	"- : Intel reserved. Do not use.",
-	"- : Intel reserved. Do not use.",
-	"- : Intel reserved. Do not use.",
-	"- : Intel reserved. Do not use."
-};
 
 uint64_t isr_handler(uint64_t rsp)
 {
@@ -377,23 +378,11 @@ uint64_t isr_handler(uint64_t rsp)
 			keyboard_irq_handler();
 		}
 
-		pic_signal_EOI(cpu->isr_number);
+		pic_signal_eoi(cpu->isr_number);
 	}
 
 	return rsp;
 }
-
-struct PMM_Info_Struct
-{
-	size_t memory_size;
-	uint32_t max_pages;
-	uint32_t used_pages;
-	struct stivale2_struct_tag_memmap *memory_map;
-};
-
-struct PMM_Info_Struct pmm_info;
-
-size_t highest_page;
 
 static const char *get_memory_map_entry_type(uint32_t type)
 {
@@ -430,37 +419,37 @@ static const char *get_memory_map_entry_type(uint32_t type)
 
 void pmm_init(struct stivale2_struct *stivale2_struct)
 {
-	struct stivale2_struct_tag_memmap *memory_map = stivale2_get_tag(stivale2_struct,
-			STIVALE2_STRUCT_TAG_MEMMAP_ID);
-
-	pmm_info.memory_map = memory_map;
+	size_t highest_page = 0;
+	struct stivale2_struct_tag_memmap *memory_map =
+		stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
 
 	struct stivale2_mmap_entry *current_entry;
-	kernel_log(INFO, "Memory map layout:\n");
 	size_t top = 0;
+	size_t i;
 
-	for (uint64_t i = 0; i < pmm_info.memory_map->entries; i++)
+	pmm_info.memory_map = memory_map;
+	kernel_log(INFO, "Memory map layout:\n");
+
+	for(i = 0; i < pmm_info.memory_map->entries; ++i)
 	{
 		current_entry = &pmm_info.memory_map->memmap[i];
-
 		serial_tx_str(TERMINAL_PURPLE);
-
 		debug("%.8d: Base: 0x%.16llx | Length: 0x%.16llx | Type: %s\n",
-			  i, current_entry->base, current_entry->length, get_memory_map_entry_type(current_entry->type));
+			i, current_entry->base, current_entry->length, get_memory_map_entry_type(current_entry->type));
 		printk(GFX_PURPLE, "%.8d: Base: 0x%.16llx | Length: 0x%.16llx | Type: %s\n",
-			   i, current_entry->base, current_entry->length, get_memory_map_entry_type(current_entry->type));
-
+			i, current_entry->base, current_entry->length, get_memory_map_entry_type(current_entry->type));
 		serial_tx_str(TERMINAL_RESET);
 
-		if (current_entry->type != STIVALE2_MMAP_USABLE &&
-				current_entry->type != STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE &&
-				current_entry->type != STIVALE2_MMAP_KERNEL_AND_MODULES)
-			continue;
-
-		top = current_entry->base + current_entry->length;
-
-		if (top > highest_page)
-			highest_page = top;
+		if(current_entry->type == STIVALE2_MMAP_USABLE ||
+			current_entry->type == STIVALE2_MMAP_BOOTLOADER_RECLAIMABLE ||
+			current_entry->type == STIVALE2_MMAP_KERNEL_AND_MODULES)
+		{
+			top = current_entry->base + current_entry->length;
+			if(top > highest_page)
+			{
+				highest_page = top;
+			}
+		}
 	}
 
 	pmm_info.memory_size = highest_page;
