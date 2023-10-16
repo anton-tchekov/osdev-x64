@@ -4,14 +4,14 @@
 #include "cpu.h"
 #include "keyboard.h"
 #include "acpi.h"
-#include "shell.h"
+#include "shell/shell.h"
 #include "stdio.h"
 
 static void boot_any_key(int key, int ascii)
 {
 	if(ascii == KEY_RETURN)
 	{
-		shell_screen_init();
+		shell_init();
 	}
 }
 
