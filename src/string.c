@@ -1,25 +1,29 @@
 #include <stdint.h>
 #include <stddef.h>
 
-void *memset(void *pointer, uint32_t value, size_t size)
+void *memset(void *ptr, int value, size_t size)
 {
-	uint8_t *buffer_pointer = (uint8_t *)pointer;
+	uint8_t *p = ptr;
+	size_t i;
+	for(i = 0; i < size; ++i)
+	{
+		*p++ = value;
+	}
 
-	for (size_t i = 0; i < size; i++)
-		*buffer_pointer++ = value;
-
-	return pointer;
+	return ptr;
 }
 
-int memcmp(const void *string1, const void *string2, size_t n)
+int memcmp(const void *p1, const void *p2, size_t n)
 {
-	const unsigned char *str1 = string1;
-	const unsigned char *str2 = string2;
-
-	for (size_t i = 0; i < n; i++, str1++, str2++)
+	const uint8_t *s1 = p1;
+	const uint8_t *s2 = p2;
+	size_t i;
+	for(i = 0; i < n; ++i, ++s1, ++s2)
 	{
-		if (*str1 != *str2)
-			return (*str1 - *str2);
+		if(*s1 != *s2)
+		{
+			return *s1 - *s2;
+		}
 	}
 
 	return 0;
