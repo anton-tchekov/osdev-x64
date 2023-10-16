@@ -1,4 +1,4 @@
-TARGET		:= src/kernel.elf
+TARGET		:= kernel/kernel.elf
 ISO_IMAGE	:= disk.iso
 
 CC	= gcc
@@ -10,7 +10,7 @@ AS_FLAGS	= -felf64
 LD_FLAGS	=
 
 INTERNAL_LD_FLAGS :=		\
-	-Tsrc/linker.ld	\
+	-Tkernel/linker.ld	\
 	-nostdlib				\
 	-static					\
 	-zmax-page-size=0x1000	\
@@ -19,7 +19,7 @@ INTERNAL_LD_FLAGS :=		\
 	# -pie
 
 INTERNAL_CC_FLAGS :=		\
-	-Isrc/			\
+	-Ikernel/			\
 	-std=gnu11				\
 	-ffreestanding			\
 	-fno-stack-protector	\
@@ -31,8 +31,8 @@ INTERNAL_CC_FLAGS :=		\
 	-mno-sse2				\
 	-mno-red-zone
 
-C_FILES		:= $(shell find src/ -type f -name '*.c')
-AS_FILES	:= $(shell find src/ -type f -name '*.s')
+C_FILES		:= $(shell find kernel/ -type f -name '*.c')
+AS_FILES	:= $(shell find kernel/ -type f -name '*.s')
 
 C_OBJ	= $(C_FILES:.c=.o)
 AS_OBJ	= $(AS_FILES:.s=.o)
@@ -52,8 +52,8 @@ limine:
 	make -C limine
 
 $(TARGET): $(OBJ)
-	$(LD) -r -b binary -o src/font_unifont.o sfn_fonts/unifont.sfn
-	$(LD) src/font_unifont.o $(OBJ) $(LD_FLAGS) $(INTERNAL_LD_FLAGS) -o $@
+	$(LD) -r -b binary -o kernel/font_unifont.o sfn_fonts/unifont.sfn
+	$(LD) kernel/font_unifont.o $(OBJ) $(LD_FLAGS) $(INTERNAL_LD_FLAGS) -o $@
 	@printf "\n\n \(^_^)/ Kernel compiled and linked successfully \(^_^)/ \n\n"
 
 
