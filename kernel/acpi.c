@@ -1,9 +1,9 @@
 #include <stddef.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <string.h>
 #include "stivale2.h"
 #include "acpi.h"
-#include "stdio.h"
-#include "string.h"
 #include "cpu.h"
 
 static rsdt_structure_t *rsdt;

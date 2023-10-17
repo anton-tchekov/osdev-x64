@@ -28,3 +28,12 @@ int memcmp(const void *p1, const void *p2, size_t n)
 
 	return 0;
 }
+
+void memset32(uint32_t *start, uint32_t value, size_t count)
+{
+	uint32_t *end = start + count;
+	while(start < end)
+	{
+		*start++ = value;
+	}
+}

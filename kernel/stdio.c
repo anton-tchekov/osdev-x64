@@ -11,7 +11,7 @@ void printk(uint32_t foreground_color, const char *fmt, ...)
 	va_list ptr;
 	va_start(ptr, fmt);
 	vsnprintf(printk_buffer, -1, fmt, ptr);
-	framebuffer_print_string(printk_buffer, foreground_color);
+	graphics_string(printk_buffer, foreground_color);
 	va_end(ptr);
 }
 

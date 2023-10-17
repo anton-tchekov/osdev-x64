@@ -318,7 +318,6 @@ uint64_t isr_handler(uint64_t rsp)
 
 	if(cpu->isr_number <= 31)
 	{
-		framebuffer_reset_screen();
 		serial_tx_str(TERMINAL_RED);
 		debug(
 			"\n"

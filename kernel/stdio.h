@@ -2,12 +2,13 @@
 #define __STDIO_H__
 
 #include <stdint.h>
-#include "framebuffer.h"
+#include "graphics.h"
 #include "serial.h"
 
 #define kernel_log(...) kernel_log_impl(__FILE__, __LINE__, __VA_ARGS__);
 
-typedef enum {
+typedef enum
+{
 	INFO,
 	WARNING,
 	ERROR
