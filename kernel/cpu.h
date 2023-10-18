@@ -194,6 +194,8 @@ struct IDT_Pointer
 	uint64_t base;
 } __attribute__((packed));
 
+typedef void (*IRQ_Handler)(void);
+
 static inline int cpuid(cpuid_registers_t *registers)
 {
 	uint32_t cpuid_max;
@@ -269,6 +271,18 @@ static inline uint8_t inb(uint16_t port)
 	return ret;
 }
 
+static inline void outl(uint16_t port, uint32_t value)
+{
+	asm volatile("outl %0, %1" : : "a"(value), "Nd"(port));
+}
+
+static inline uint32_t inl(uint16_t port)
+{
+	uint32_t ret;
+	asm volatile("inl %1, %0" : "=a"(ret) : "Nd"(port));
+	return ret;
+}
+
 static inline void io_wait(void)
 {
 	inb(0x80);
@@ -291,13 +305,12 @@ static inline uintptr_t phys_to_higher_half_data(uintptr_t address)
 	return HIGHER_HALF_DATA_LV4 + address;
 }
 
+void isr_register(int id, IRQ_Handler handler);
+
 void gdt_init(void);
 void idt_init(void);
 void pic_disable(void);
 void pic_remap(void);
-void pic_set_mask(uint8_t irq_line);
-void pic_clear_mask(uint8_t irq_line);
-void pic_signal_eoi(uint64_t isr_number);
 void pmm_init(struct stivale2_struct *stivale2_struct);
 
 #endif

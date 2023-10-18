@@ -219,7 +219,6 @@ void keyboard_irq_handler(void)
 
 void keyboard_init(void)
 {
-	pic_clear_mask(1);
 	while(inb(0x64) & 0x01)
 	{
 		inb(0x60);
@@ -230,7 +229,8 @@ void keyboard_init(void)
 		outb(0x60, 0xF4);
 	}
 
-	kernel_log(INFO, "Keyboard driver initialized\n");
+	isr_register(1, keyboard_irq_handler);
+	printk("Keyboard driver initialized\n");
 }
 
 void keyboard_event_register(KeyEvent handler)

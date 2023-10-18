@@ -28,12 +28,12 @@ static void event_key (int key, int ascii, int released) {
     if(isprint(ascii))
     {
         shell.Buffer[shell.Cursor++] = ascii;
-        printk(GFX_RED, "%c", ascii);
+        printk("%c", ascii);
     } else if(ascii == '\n') {
         shell_handle_enter();
     } else if(ascii == '\b' && shell.Cursor > 0) {
         shell.Buffer[--shell.Cursor] = 0;
-        printk(GFX_RED, "\b");
+        printk("\b");
     }
 }
 
@@ -44,7 +44,7 @@ void shell_init(){
 
     keyboard_event_register(event_key);
 
-    printk(GFX_RED, "\n\nImaginaryOS (iOS) made by Anton and Tim \n\n"
+    printk("\n\nImaginaryOS (iOS) made by Anton and Tim \n\n"
            "###########    ###########\n"
            "###########    ###########\n"
            "###                    ###\n"
@@ -61,9 +61,9 @@ void shell_init(){
 }
 
 void shell_handle_enter () {
-    printk(GFX_WHITE, "\n");
+    printk("\n");
     shell_handle_command(shell.Buffer);
-    printk(GFX_GREEN, "\nImaginaryOS> ");
+    printk("\nImaginaryOS> ");
     shell_clear_buffer();
 }
 
@@ -86,9 +86,9 @@ static void shell_handle_command (char* cmd) {
         *p++ = '\0';
     }
 
-    printk(GFX_WHITE, "argc = %d\n", argc);
+    printk("argc = %d\n", argc);
     for(int i = 0; i < argc; ++i) {
-        printk(GFX_WHITE, "%d. %s\n", i, argv[i]);
+        printk("%d. %s\n", i, argv[i]);
     }
 }
 
@@ -100,5 +100,5 @@ void shell_clear_buffer () {
 }
 
 void puts(const char* line, int x, int y, int c) {
-    printk(GFX_RED, line);
+    printk(line);
 }

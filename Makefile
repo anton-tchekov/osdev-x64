@@ -43,7 +43,11 @@ OBJ = $(C_OBJ) $(AS_OBJ)
 all: $(TARGET)
 
 run: $(ISO_IMAGE)
-	qemu-system-x86_64 -M q35 -m 2G -serial stdio -cdrom $(ISO_IMAGE)
+	qemu-system-x86_64 -M q35 -m 2G -serial stdio \
+	-drive id=disk,file=IMAGE.img,if=none \
+	-device ahci,id=ahci \
+	-device ide-hd,drive=disk,bus=ahci.0 \
+	-cdrom $(ISO_IMAGE)
 
 limine:
 	make -C limine

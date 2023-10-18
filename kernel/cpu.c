@@ -1,10 +1,10 @@
+#include "cpu.h"
+#include "stivale2.h"
 #include <stdint.h>
 #include <stddef.h>
-#include "stivale2.h"
-#include "keyboard.h"
-#include "cpu.h"
-#include "stdio.h"
-#include "string.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define PIC1           0x20
 #define PIC2           0xA0
@@ -23,6 +23,7 @@ static struct GDT gdt;
 static struct GDT_Pointer gdt_pointer;
 static struct IDT_Descriptor idt[256];
 static struct IDT_Pointer idt_pointer;
+static IRQ_Handler irq_handlers[16];
 
 static const char *exceptions[] =
 {
@@ -144,16 +145,16 @@ void gdt_init(void)
 	gdt_pointer.base = (uint64_t)&gdt;
 
 	_load_gdt_and_tss_asm(&gdt_pointer);
-	kernel_log(INFO, "GDT initialized\n");
+	printk("GDT initialized\n");
 }
 
-static void create_descriptor(uint8_t index, uint8_t type_and_attributes)
+static void create_descriptor(uint8_t index)
 {
 	uint64_t offset = _isr_names_asm[index];
 	idt[index].offset_15_0 = offset & 0xFFFF;
 	idt[index].selector = 0x08;
 	idt[index].ist = 0;
-	idt[index].type_and_attributes = type_and_attributes;
+	idt[index].type_and_attributes = 0x8E;
 	idt[index].offset_31_16 = (offset >> 16) & 0xFFFF;
 	idt[index].offset_63_32 = (offset >> 32) & 0xFFFFFFFF;
 	idt[index].zero = 0;
@@ -161,79 +162,11 @@ static void create_descriptor(uint8_t index, uint8_t type_and_attributes)
 
 void idt_init(void)
 {
-	create_descriptor(0, 0x8E);
-	create_descriptor(1, 0x8E);
-	create_descriptor(2, 0x8E);
-	create_descriptor(3, 0x8E);
-	create_descriptor(4, 0x8E);
-	create_descriptor(5, 0x8E);
-	create_descriptor(6, 0x8E);
-	create_descriptor(7, 0x8E);
-	create_descriptor(8, 0x8E);
-	create_descriptor(9, 0x8E);
-	create_descriptor(10, 0x8E);
-	create_descriptor(11, 0x8E);
-	create_descriptor(12, 0x8E);
-	create_descriptor(13, 0x8E);
-	create_descriptor(14, 0x8E);
-	create_descriptor(15, 0x8E);
-	create_descriptor(16, 0x8E);
-	create_descriptor(17, 0x8E);
-	create_descriptor(18, 0x8E);
-	create_descriptor(19, 0x8E);
-	create_descriptor(20, 0x8E);
-	create_descriptor(21, 0x8E);
-	create_descriptor(22, 0x8E);
-	create_descriptor(23, 0x8E);
-	create_descriptor(24, 0x8E);
-	create_descriptor(25, 0x8E);
-	create_descriptor(26, 0x8E);
-	create_descriptor(27, 0x8E);
-	create_descriptor(28, 0x8E);
-	create_descriptor(29, 0x8E);
-	create_descriptor(30, 0x8E);
-	create_descriptor(31, 0x8E);
-
-	pic_remap();
-
-	create_descriptor(32, 0x8E);
-	create_descriptor(33, 0x8E);
-	create_descriptor(34, 0x8E);
-	create_descriptor(35, 0x8E);
-	create_descriptor(36, 0x8E);
-	create_descriptor(37, 0x8E);
-	create_descriptor(38, 0x8E);
-	create_descriptor(39, 0x8E);
-	create_descriptor(40, 0x8E);
-	create_descriptor(41, 0x8E);
-	create_descriptor(42, 0x8E);
-	create_descriptor(43, 0x8E);
-	create_descriptor(44, 0x8E);
-	create_descriptor(45, 0x8E);
-	create_descriptor(46, 0x8E);
-	create_descriptor(47, 0x8E);
-
-	create_descriptor(255, 0x8E);
-
-	pic_set_mask(1);
-
-	idt_pointer.limit = sizeof(idt) - 1;
-	idt_pointer.base = (uint64_t)&idt;
-
-	_load_idt_asm(&idt_pointer);
-	kernel_log(INFO, "IDT initialized\n");
-}
-
-void pic_disable(void)
-{
-	outb(PIC2_DATA, 0xFF);
-	outb(PIC1_DATA, 0xFF);
-}
-
-void pic_remap(void)
-{
-	uint8_t mask1 = inb(PIC1_DATA);
-	uint8_t mask2 = inb(PIC2_DATA);
+	int i;
+	for(i = 0; i <= 31; ++i)
+	{
+		create_descriptor(i);
+	}
 
 	outb(PIC1_COMMAND, 0x11);
 	outb(PIC2_COMMAND, 0x11);
@@ -255,61 +188,29 @@ void pic_remap(void)
 	outb(PIC2_DATA, 0x00);
 	io_wait();
 
-	outb(PIC1_DATA, ICW4_8086);
-	io_wait();
-	outb(PIC2_DATA, ICW4_8086);
-	io_wait();
+	for(i = 32; i <= 47; ++i)
+	{
+		create_descriptor(i);
+	}
 
-	outb(PIC1_DATA, mask1);
-	outb(PIC2_DATA, mask2);
+	create_descriptor(255);
+
+	idt_pointer.limit = sizeof(idt) - 1;
+	idt_pointer.base = (uint64_t)&idt;
+
+	_load_idt_asm(&idt_pointer);
+	printk("IDT initialized\n");
 }
 
-void pic_set_mask(uint8_t irq_line)
+void pic_disable(void)
 {
-	uint16_t port;
-	uint8_t value;
-
-	if(irq_line < 8)
-	{
-		port = PIC1_DATA;
-	}
-	else
-	{
-		port = PIC2_DATA;
-		irq_line -= 8;
-	}
-
-	value = inb(port) | (1 << irq_line);
-	outb(port, value);
+	outb(PIC2_DATA, 0xFF);
+	outb(PIC1_DATA, 0xFF);
 }
 
-void pic_clear_mask(uint8_t irq_line)
+void isr_register(int id, IRQ_Handler handler)
 {
-	uint16_t port;
-	uint8_t value;
-
-	if(irq_line < 8)
-	{
-		port = PIC1_DATA;
-	}
-	else
-	{
-		port = PIC2_DATA;
-		irq_line -= 8;
-	}
-
-	value = inb(port) & ~(1 << irq_line);
-	outb(port, value);
-}
-
-void pic_signal_eoi(uint64_t isr_number)
-{
-	if(isr_number >= 40)
-	{
-		outb(PIC2_COMMAND, 0x20);
-	}
-
-	outb(PIC1_COMMAND, 0x20);
+	irq_handlers[id] = handler;
 }
 
 uint64_t isr_handler(uint64_t rsp)
@@ -318,8 +219,7 @@ uint64_t isr_handler(uint64_t rsp)
 
 	if(cpu->isr_number <= 31)
 	{
-		serial_tx_str(TERMINAL_RED);
-		debug(
+		printk(
 			"\n"
 			"-------------------\n"
 			"EXCEPTION OCCURRED!\n\n"
@@ -339,8 +239,6 @@ uint64_t isr_handler(uint64_t rsp)
 			cpu->r13, cpu->r14,    cpu->r15, cpu->ss,
 			cpu->rsp, cpu->rflags, cpu->cs,  cpu->rip);
 
-		serial_tx_str(TERMINAL_RESET);
-
 		for(;;)
 		{
 			asm volatile("cli; hlt");
@@ -348,12 +246,19 @@ uint64_t isr_handler(uint64_t rsp)
 	}
 	else if(cpu->isr_number >= 32 && cpu->isr_number <= 47)
 	{
-		if(cpu->isr_number == 33)
+		IRQ_Handler handler;
+		if(cpu->isr_number >= 40)
 		{
-			keyboard_irq_handler();
+			outb(PIC2_COMMAND, 0x20);
 		}
 
-		pic_signal_eoi(cpu->isr_number);
+		outb(PIC1_COMMAND, 0x20);
+
+		handler = irq_handlers[cpu->isr_number - 32];
+		if(handler)
+		{
+			handler();
+		}
 	}
 
 	return rsp;
@@ -395,20 +300,27 @@ static const char *get_memory_map_entry_type(uint32_t type)
 void pmm_init(struct stivale2_struct *s)
 {
 	size_t i;
+	size_t largest = 0;
+	uintptr_t start = 0;
 	struct stivale2_struct_tag_memmap *memory_map;
-
 	memory_map = stivale2_get_tag(s, STIVALE2_STRUCT_TAG_MEMMAP_ID);
-	kernel_log(INFO, "Memory map layout:\n");
+	printk("Memory map layout:\n");
 	for(i = 0; i < memory_map->entries; ++i)
 	{
 		struct stivale2_mmap_entry *cur = &memory_map->memmap[i];
-		serial_tx_str(TERMINAL_PURPLE);
-		debug("%.8d: Base: 0x%.16llx | Length: 0x%.16llx | Type: %s\n",
-			i, cur->base, cur->length, get_memory_map_entry_type(cur->type));
-		serial_tx_str(TERMINAL_RESET);
 
-		printk(GFX_PURPLE,
-			"%.8d: Base: 0x%.16llx | Length: 0x%.16llx | Type: %s\n",
+		if(cur->type == STIVALE2_MMAP_USABLE && cur->length > largest)
+		{
+			largest = cur->length;
+			start = cur->base;
+		}
+
+		printk("%.8d: Base: 0x%.16llx | Length: 0x%.16llx | Type: %s\n",
 			i, cur->base, cur->length, get_memory_map_entry_type(cur->type));
+	}
+
+	if(start)
+	{
+		allocator_init(start, largest);
 	}
 }

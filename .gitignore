@@ -3,5 +3,5 @@
 .idea/
 *.iso
 *.o
-
+*.img
 iso_root/
