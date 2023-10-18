@@ -131,7 +131,6 @@ bool apic_is_available(void);
 uint32_t lapic_read_register(uint32_t reg);
 void lapic_write_register(uint32_t reg, uint32_t data);
 void lapic_enable(void);
-void lapic_signal_eoi(void);
 uint32_t io_apic_read_register(size_t io_apic_i, uint8_t reg_offset);
 void io_apic_write_register(size_t io_apic_i, uint8_t reg_offset, uint32_t data);
 

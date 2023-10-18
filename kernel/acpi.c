@@ -17,15 +17,15 @@ void acpi_init(struct stivale2_struct *stivale2_struct)
 	rsdt = (rsdt_structure_t *)phys_to_higher_half_data((uintptr_t)get_rsdp_structure()->rsdt_address);
 	if(acpi_check_sdt_header(&rsdt->header, "RSDT") != 0)
 	{
-		kernel_log(ERROR, "No ACPI was found on this computer!\n");
-		kernel_log(ERROR, "Kernel halted!\n");
+		printk("No ACPI was found on this computer!\n");
+		printk("Kernel halted!\n");
 
 		for (;;)
 			asm ("hlt");
 	}
 
 	madt_init();
-	kernel_log(INFO, "ACPI initialized\n");
+	printk("ACPI initialized\n");
 }
 
 int acpi_check_sdt_header(sdt_header_t *sdt_header, const char *signature)
@@ -42,37 +42,26 @@ int acpi_verify_sdt_header_checksum(sdt_header_t *sdt_header, const char *signat
 	uint8_t checksum = 0;
 	uint8_t *ptr = (uint8_t *)sdt_header;
 	uint8_t current_byte;
-	kernel_log(INFO, "Verifying %s checksum:\n", signature);
-	serial_tx_str(TERMINAL_PURPLE);
-	debug("First %d bytes are being checked: ", sdt_header->length);
-	printk(GFX_PURPLE, "First %d bytes are being checked: ", sdt_header->length);
+	printk("Verifying %s checksum:\n", signature);
+	printk("First %d bytes are being checked: ", sdt_header->length);
 
 	for (uint8_t i = 0; i < sdt_header->length; i++)
 	{
 		current_byte = ptr[i];
-		debug("%x ", current_byte);
-		printk(GFX_PURPLE, "%x ", current_byte);
-
+		printk("%x ", current_byte);
 		checksum += current_byte;
 	}
 
-	debug("\n");
-	printk(GFX_PURPLE, "\n");
-
-	serial_tx_str(TERMINAL_RESET);
-
+	printk("\n");
 	checksum = checksum & 0xFF;
-
-	if (checksum == 0)
+	if(checksum == 0)
 	{
-		kernel_log(INFO, "%s checksum is verified.\n", signature);
-
+		printk("%s checksum is verified.\n", signature);
 		return 0;
 	}
 	else
 	{
-		kernel_log(ERROR, "%s checksum isn't 0! Checksum: 0x%x\n", signature, checksum);
-
+		printk("%s checksum isn't 0! Checksum: 0x%x\n", signature, checksum);
 		return 1;
 	}
 }
@@ -90,7 +79,7 @@ sdt_header_t *acpi_find_sdt_table(const char *signature)
 			return (sdt_header_t *)phys_to_higher_half_data((uintptr_t)current_entry);
 	}
 
-	kernel_log(ERROR, "Could not find SDT with signature '%s'!\n", signature);
+	printk("Could not find SDT with signature '%s'!\n", signature);
 	return NULL;
 }
 
@@ -101,18 +90,15 @@ void rsdp_init(uint64_t rsdp_address)
 {
 	rsdp_verify_checksum(rsdp_address);
 	rsdp = (rsdp_structure_t *)rsdp_address;
-	serial_tx_str(TERMINAL_PURPLE);
 	if(rsdp->revision >= 2)
 	{
 		has_xsdt_var = true;
-		kernel_log(INFO, "ACPI Version 2.0 or above is used\n");
+		printk("ACPI Version 2.0 or above is used\n");
 	}
 	else
 	{
-		kernel_log(INFO, "ACPI Version 1.0 is used\n");
+		printk("ACPI Version 1.0 is used\n");
 	}
-
-	serial_tx_str(TERMINAL_RESET);
 }
 
 void rsdp_verify_checksum(uint64_t rsdp_address)
@@ -120,29 +106,24 @@ void rsdp_verify_checksum(uint64_t rsdp_address)
 	uint8_t checksum = 0;
 	uint8_t *ptr = (uint8_t *)rsdp_address;
 	uint8_t current_byte;
-	kernel_log(INFO, "Verifying RSDP checksum:\n");
-	serial_tx_str(TERMINAL_PURPLE);
-	debug("20 first bytes are being checked: ");
-	printk(GFX_PURPLE, "20 first bytes are being checked: ");
-	for (uint8_t i = 0; i < 20; i++)
+	printk("Verifying RSDP checksum:\n");
+	printk("20 first bytes are being checked: ");
+	for(uint8_t i = 0; i < 20; ++i)
 	{
 		current_byte = ptr[i];
-		debug("%x ", current_byte);
-		printk(GFX_PURPLE, "%x ", current_byte);
+		printk("%x ", current_byte);
 		checksum += current_byte;
 	}
 
-	debug("\n");
-	printk(GFX_PURPLE, "\n");
-	serial_tx_str(TERMINAL_RESET);
-	if ((checksum & 0xFF) == 0x00)
+	printk("\n");
+	if((checksum & 0xFF) == 0x00)
 	{
-		kernel_log(INFO, "RSDP checksum is verified\n");
+		printk("RSDP checksum is verified\n");
 	}
 	else
 	{
-		kernel_log(ERROR, "RSDP checksum isn't 0! Checksum: 0x%x\n", checksum & 0xFF);
-		kernel_log(ERROR, "Kernel halted!\n");
+		printk("RSDP checksum isn't 0! Checksum: 0x%x\n", checksum & 0xFF);
+		printk("Kernel halted!\n");
 		halt();
 	}
 }
@@ -174,8 +155,8 @@ void madt_init(void)
 	madt = (madt_structure_t *)(uintptr_t)acpi_find_sdt_table("APIC");
 	if(madt == NULL)
 	{
-		kernel_log(ERROR, "No MADT was found on this computer!\n");
-		kernel_log(ERROR, "Kernel halted!\n");
+		printk("No MADT was found on this computer!\n");
+		printk("Kernel halted!\n");
 		halt();
 	}
 
@@ -186,22 +167,22 @@ void madt_init(void)
 		switch(*table_ptr)
 		{
 		case PROCESSOR_LOCAL_APIC:
-			kernel_log(INFO, "MADT Initialization: Found local APIC\n");
+			printk("MADT Initialization: Found local APIC\n");
 			madt_lapics[madt_lapics_i++] = (madt_lapic_t *)table_ptr;
 			break;
 
 		case IO_APIC:
-			kernel_log(INFO, "MADT Initialization: Found IO APIC\n");
+			printk("MADT Initialization: Found IO APIC\n");
 			madt_io_apics[madt_io_apics_i++] = (madt_io_apic_t *)table_ptr;
 			break;
 
 		case INTERRUPT_SOURCE_OVERRIDE:
-			kernel_log(INFO, "MADT Initialization: Found interrupt source override\n");
+			printk("MADT Initialization: Found interrupt source override\n");
 			madt_isos[madt_isos_i++] = (madt_iso_t *)table_ptr;
 			break;
 
 		case LAPIC_NMI:
-			kernel_log(INFO, "MADT Initialization: Found local APIC non maskable interrupt\n");
+			printk("MADT Initialization: Found local APIC non maskable interrupt\n");
 			madt_lapic_nmis[madt_lapic_nmis_i++] = (madt_lapic_nmi_t *)table_ptr;
 			break;
 		}
@@ -216,32 +197,31 @@ void apic_init(void)
 {
 	if(!apic_is_available())
 	{
-		kernel_log(ERROR, "No APIC was found on this computer!\n");
-		kernel_log(ERROR, "Kernel halted!\n");
+		printk("No APIC was found on this computer!\n");
+		printk("Kernel halted!\n");
 		halt();
 	}
 
 	lapic_base = phys_to_higher_half_data((uintptr_t)madt->lapic_address);
-	pic_remap();
+	// pic_remap();
 	pic_disable();
 	lapic_enable();
 }
 
 bool apic_is_available(void)
 {
-	cpuid_registers_t *regs = &(cpuid_registers_t)
+	cpuid_registers_t regs =
 	{
 		.leaf = CPUID_GET_FEATURES,
 		.subleaf = 0,
-
 		.eax = 0,
 		.ebx = 0,
 		.ecx = 0,
 		.edx = 0
 	};
 
-	cpuid(regs);
-	return (regs->edx & CPUID_FEAT_EDX_APIC);
+	cpuid(&regs);
+	return regs.edx & CPUID_FEAT_EDX_APIC;
 }
 
 uint32_t lapic_read_register(uint32_t reg)
@@ -257,11 +237,6 @@ void lapic_write_register(uint32_t reg, uint32_t data)
 void lapic_enable(void)
 {
 	lapic_write_register(APIC_SPURIOUS_VECTOR_REGISTER, APIC_SOFTWARE_ENABLE | SPURIOUS_INTERRUPT);
-}
-
-void lapic_signal_eoi(void)
-{
-	lapic_write_register(APIC_EOI_REGISTER, 0);
 }
 
 uint32_t io_apic_read_register(size_t io_apic_i, uint8_t reg_offset)
