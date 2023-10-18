@@ -35,4 +35,9 @@ typedef float f32;
 /** 64-bit float */
 typedef double f64;
 
+static inline int min(int a, int b)
+{
+	return a < b ? a : b;
+}
+
 #endif /* __TYPES_H__ */
