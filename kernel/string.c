@@ -1,17 +1,4 @@
-#include <stdint.h>
-#include <stddef.h>
-
-void *memset(void *ptr, int value, size_t size)
-{
-	uint8_t *p = ptr;
-	size_t i;
-	for(i = 0; i < size; ++i)
-	{
-		*p++ = value;
-	}
-
-	return ptr;
-}
+#include "string.h"
 
 int memcmp(const void *p1, const void *p2, size_t n)
 {
@@ -29,9 +16,30 @@ int memcmp(const void *p1, const void *p2, size_t n)
 	return 0;
 }
 
+void *memset(void *ptr, int value, size_t size)
+{
+	uint8_t *p = ptr;
+	size_t i;
+	for(i = 0; i < size; ++i)
+	{
+		*p++ = value;
+	}
+
+	return ptr;
+}
+
 void memset32(uint32_t *start, uint32_t value, size_t count)
 {
 	uint32_t *end = start + count;
+	while(start < end)
+	{
+		*start++ = value;
+	}
+}
+
+void memset16(uint16_t *start, uint16_t value, size_t count)
+{
+	uint16_t *end = start + count;
 	while(start < end)
 	{
 		*start++ = value;

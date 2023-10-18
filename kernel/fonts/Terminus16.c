@@ -1,6 +1,6 @@
 #include "Terminus16.h"
 
-static const uint8_t _terminus16_bitmap[] =
+const uint8_t Terminus16[] =
 {
 	0x00,
 	0x00,

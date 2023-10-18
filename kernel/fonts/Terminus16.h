@@ -1,8 +1,8 @@
 #ifndef __TERMINUS16_H__
 #define __TERMINUS16_H__
 
-#include "font.h"
+#include <stdint.h>
 
-extern const Font *const Terminus16;
+extern const uint8_t Terminus16[];
 
 #endif /* __TERMINUS16_H__ */
