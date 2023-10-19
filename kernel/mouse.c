@@ -51,7 +51,7 @@ static u8 mouse_read(void)
 	return inb(MOUSE_PORT);
 }
 
-void mouse_irq_handler(void)
+static void mouse_irq_handler(void)
 {
 	u8 status = inb(MOUSE_STATUS);
 	while(status & MOUSE_BIT_B)

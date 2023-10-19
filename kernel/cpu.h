@@ -311,6 +311,7 @@ void gdt_init(void);
 void idt_init(void);
 void pic_disable(void);
 void pic_remap(void);
-void pmm_init(struct stivale2_struct *stivale2_struct);
+void pmm_init(struct stivale2_struct *s);
+void memory_map_print(struct stivale2_struct *s);
 
 #endif

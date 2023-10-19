@@ -74,11 +74,11 @@ void graphics_char(uint32_t x, uint32_t y, uint32_t c,
 {
 	const uint8_t *char_bitmap = Terminus16 + (c - 32) * 16;
 	uint32_t *offset = graphics.Pixels + y * graphics.Pitch + x;
-	uint32_t xc, yc, byte;
+	int xc, yc, byte;
 	for(yc = 0; yc < 16; ++yc, ++char_bitmap)
 	{
 		byte = *char_bitmap;
-		for(xc = 0; xc < 8; ++xc, byte >>= 1)
+		for(xc = 7; xc >= 0; --xc, byte >>= 1)
 		{
 			offset[xc] = (byte & 1) ? fg : bg;
 		}

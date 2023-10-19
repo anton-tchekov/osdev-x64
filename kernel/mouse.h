@@ -9,7 +9,6 @@
 typedef void (*MouseEvent)(int, int, int);
 
 void mouse_init(void);
-void mouse_irq_handler(void);
 void mouse_event_register(MouseEvent handler);
 
 #endif /* __MOUSE_H__ */

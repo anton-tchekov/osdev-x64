@@ -17,9 +17,6 @@ static void boot_any_key(int key, int ascii, int released)
 {
 	if(ascii == '\n')
 	{
-	graphics_rect(10, 10, 10, 10, GFX_WHITE);
-
-		//printk("Enter pressed\n");
 		shell_init();
 	}
 }
@@ -32,12 +29,11 @@ static void mouse_event(int dx, int dy, int buttons)
 void kmain(struct stivale2_struct *stivale2_struct)
 {
 	pmm_init(stivale2_struct);
-
 	graphics_init(stivale2_struct, GFX_BLACK);
 	graphics_rect(50, 50, 200, 200, GFX_RED);
 	serial_init();
 	printk("Framebuffer and serial initialized\n");
-
+	memory_map_print(stivale2_struct);
 	gdt_init();
 	idt_init();
 	printk("CPU Vendor ID String: %s\n", cpu_get_vendor_string());

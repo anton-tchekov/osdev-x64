@@ -3,10 +3,10 @@
 
 #include "keys.h"
 
+/* key, codepoint, released */
 typedef void (*KeyEvent)(int, int, int);
 
 void keyboard_init(void);
-void keyboard_irq_handler(void);
 void keyboard_event_register(KeyEvent handler);
 
 #endif /* __KEYBOARD_H__ */

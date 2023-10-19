@@ -156,7 +156,7 @@ static int scancode_to_key(int scancode, int esc)
 	return KEY_UNKNOWN;
 }
 
-void keyboard_irq_handler(void)
+static void keyboard_irq_handler(void)
 {
 	static int esc, mods;
 	int released, key, codepoint, scancode, mod;

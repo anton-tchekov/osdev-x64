@@ -287,7 +287,7 @@ static const char *get_memory_map_entry_type(uint32_t type)
 		return "Bootloader Reclaimable";
 
 	case STIVALE2_MMAP_KERNEL_AND_MODULES:
-		return "Kernel And Modules";
+		return "Kernel and Modules";
 
 	case STIVALE2_MMAP_FRAMEBUFFER:
 		return "Framebuffer";
@@ -304,23 +304,33 @@ void pmm_init(struct stivale2_struct *s)
 	uintptr_t start = 0;
 	struct stivale2_struct_tag_memmap *memory_map;
 	memory_map = stivale2_get_tag(s, STIVALE2_STRUCT_TAG_MEMMAP_ID);
-	printk("Memory map layout:\n");
 	for(i = 0; i < memory_map->entries; ++i)
 	{
 		struct stivale2_mmap_entry *cur = &memory_map->memmap[i];
-
 		if(cur->type == STIVALE2_MMAP_USABLE && cur->length > largest)
 		{
 			largest = cur->length;
 			start = cur->base;
 		}
-
-		printk("%.8d: Base: 0x%.16llx | Length: 0x%.16llx | Type: %s\n",
-			i, cur->base, cur->length, get_memory_map_entry_type(cur->type));
 	}
 
 	if(start)
 	{
 		allocator_init(start, largest);
+	}
+}
+
+void memory_map_print(struct stivale2_struct *s)
+{
+	size_t i;
+	struct stivale2_struct_tag_memmap *memory_map;
+	memory_map = stivale2_get_tag(s, STIVALE2_STRUCT_TAG_MEMMAP_ID);
+	printk("Memory map layout:\n"
+		"       Base:                Size:                Type:\n");
+	for(i = 0; i < memory_map->entries; ++i)
+	{
+		struct stivale2_mmap_entry *cur = &memory_map->memmap[i];
+		printk("%4d:  0x%.16llx | 0x%.16llx | %s\n",
+			i, cur->base, cur->length, get_memory_map_entry_type(cur->type));
 	}
 }
