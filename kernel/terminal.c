@@ -36,6 +36,7 @@ void terminal_init(int w, int h)
 	terminal.Height = h / 16;
 	terminal.Size = terminal.Width * terminal.Height;
 	terminal.Buffer = malloc(terminal.Size * sizeof(*terminal.Buffer));
+	memset16(terminal.Buffer, 0, terminal.Size);
 }
 
 void terminal_put(char c, u8 fg, u8 bg, u32 x, u32 y)
