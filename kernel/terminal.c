@@ -71,6 +71,19 @@ void terminal_char(int c)
 		memset16(terminal.Buffer + terminal.Size - terminal.Width,
 			vga_entry(' ', vga_color(terminal.FG, terminal.BG)), terminal.Width);
 
+		{
+			/* FIXME */
+			int x, y;
+			for(y = 0; y < terminal.Height; ++y)
+			{
+				for(x = 0; x < terminal.Width; ++x)
+				{
+					terminal_put(terminal.Buffer[y * terminal.Width + x],
+						terminal.FG, terminal.BG, x, y);
+				}
+			}
+		}
+
 		terminal.Y = terminal.Height - 1;
 	}
 
