@@ -89,19 +89,19 @@ void port_rebase(HBA_PORT *port, struct port_data *pdata)
 
 void probe_port(HBA_MEM *abar, struct port_data *pdtable)
 {
-	printk("here!\n");
+	//printk("here!\n");
 	glob_abar = abar;
 	int i;
 	uint32_t pi = abar->pi;
 	for(i = 0; i < 32; ++i, pi >>= 1)
 	{
-			printk("i = %d!\n", i);
+			//printk("i = %d!\n", i);
 		if(!(pi & 1))
 		{
 			continue;
 		}
 
-			printk("lol\n");
+			//printk("lol\n");
 
 		HBA_PORT *port = &abar->ports[i];
 		int32_t ssts = port->ssts;
@@ -117,8 +117,8 @@ void probe_port(HBA_MEM *abar, struct port_data *pdtable)
 		}
 
 		/* ITS SA(N)TA */
-		printk("found sata device: %d\n", i);
-		port_rebase(abar->ports, &pdtable[i]); /* BUG ??? */
+		//printk("found sata device: %d\n", i);
+		//port_rebase(abar->ports, &pdtable[i]); /* BUG ??? */
 	}
 
 }

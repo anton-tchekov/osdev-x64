@@ -44,19 +44,20 @@ void kmain(struct stivale2_struct *stivale2_struct)
 	mouse_init();
 	cursor_init();
 	rtc_read();
-	printk("Press enter to continue\n");
 
-#if 0
 	uint64_t addr = checkAllBuses();
 	printk("%016x\n", addr);
 	HBA_MEM *abar = (HBA_MEM *)addr;
 	struct port_data pdtable[32];
 	probe_port(abar, pdtable);
+
+#if 0
 	graphics_char(10, 10, 'A', GFX_RED, GFX_BLACK, 0);
 	char buf[4096];
 	printk("RES = %d\n", read_sata(&pdtable[0], 0, 0, 1, buf));
 #endif
 
+	printk("Press enter to continue\n");
 	keyboard_event_register(boot_any_key);
 	mouse_event_register(mouse_event);
 	halt();
