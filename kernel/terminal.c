@@ -61,7 +61,6 @@ void terminal_char(int c)
 		}
 	}
 
-#if 0
 	if(terminal.Y >= terminal.Height)
 	{
 		/* Scroll Up */
@@ -74,7 +73,6 @@ void terminal_char(int c)
 
 		terminal.Y = terminal.Height - 1;
 	}
-#endif
 
 	/*cursor_move(terminal.X, terminal.Y);*/
 }

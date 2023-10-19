@@ -12,14 +12,4 @@ enum
 	CHAR_TAB_BOTH      = 132,
 };
 
-typedef struct
-{
-	int Width;
-	int Height;
-	const uint8_t *Bitmap;
-} Font;
-
-void font_char(int x, int y, int c, int fg, int bg, const Font *font);
-void font_str(int x, int y, const char *s, int fg, int bg, const Font *font);
-
 #endif /* __FONT_H__ */

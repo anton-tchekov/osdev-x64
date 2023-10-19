@@ -73,17 +73,26 @@ void graphics_char(uint32_t x, uint32_t y, uint32_t c,
 	uint32_t fg, uint32_t bg, uint32_t font)
 {
 	const uint8_t *char_bitmap = Terminus16 + (c - 32) * 16;
-	uint32_t *offset = graphics.Pixels + y * graphics.Pitch + x;
+	size_t offset;
+	uint32_t *fb, *dbl;
+	uint32_t color;
+
+	offset = y * graphics.Pitch + x;
+	fb = graphics.Pixels + offset;
+	dbl = graphics.Double + offset;
 	int xc, yc, byte;
 	for(yc = 0; yc < 16; ++yc, ++char_bitmap)
 	{
 		byte = *char_bitmap;
 		for(xc = 7; xc >= 0; --xc, byte >>= 1)
 		{
-			offset[xc] = (byte & 1) ? fg : bg;
+			color = (byte & 1) ? fg : bg;
+			fb[xc] = color;
+			dbl[xc] = color;
 		}
 
-		offset += graphics.Pitch;
+		fb += graphics.Pitch;
+		dbl += graphics.Pitch;
 	}
 }
 
