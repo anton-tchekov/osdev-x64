@@ -19,8 +19,8 @@ int memcmp(const void *p1, const void *p2, size_t n)
 void *memset(void *ptr, int value, size_t size)
 {
 	uint8_t *p = ptr;
-	size_t i;
-	for(i = 0; i < size; ++i)
+	uint8_t *end = p + size;
+	while(p < end)
 	{
 		*p++ = value;
 	}
