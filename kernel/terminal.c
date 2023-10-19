@@ -32,11 +32,15 @@ void terminal_init(int w, int h)
 {
 	terminal.X = 0;
 	terminal.Y = 0;
+	terminal.BG = 0;
+	terminal.FG = 0;
 	terminal.Width = w / 8;
 	terminal.Height = h / 16;
 	terminal.Size = terminal.Width * terminal.Height;
 	terminal.Buffer = malloc(terminal.Size * sizeof(*terminal.Buffer));
-	memset16(terminal.Buffer, 0, terminal.Size);
+	memset16(terminal.Buffer,
+		vga_entry(' ', vga_color(terminal.FG, terminal.BG)),
+		terminal.Size);
 }
 
 void terminal_put(char c, u8 fg, u8 bg, u32 x, u32 y)

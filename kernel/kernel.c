@@ -13,6 +13,7 @@
 #include "cmos.h"
 #include "ahci.h"
 #include "terminal.h"
+#include "window.h"
 
 static void boot_any_key(int key, int ascii, int released)
 {
@@ -44,6 +45,9 @@ void kmain(struct stivale2_struct *stivale2_struct)
 	mouse_init();
 	cursor_init();
 	rtc_read();
+
+	Window window = { 300, 100, 400, 200, "Window 1" };
+	//window_draw(&window);
 
 	uint64_t addr = checkAllBuses();
 	printk("%016x\n", addr);
