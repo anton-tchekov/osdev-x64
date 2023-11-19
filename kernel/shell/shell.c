@@ -2,6 +2,8 @@
 #include "keyboard.h"
 #include <ctype.h>
 #include <stdio.h>
+#include <string.h>
+#include <shutdown.h>
 
 #define SHELL_BUFFER_SIZE 256
 
@@ -89,6 +91,11 @@ static void shell_handle_command (char* cmd) {
     printk("argc = %d\n", argc);
     for(int i = 0; i < argc; ++i) {
         printk("%d. %s\n", i, argv[i]);
+    }
+
+    if(strcmp(argv[0], "shutdown") == 0)
+    {
+        shutdown();
     }
 }
 
