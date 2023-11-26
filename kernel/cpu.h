@@ -292,25 +292,7 @@ static inline void io_wait(void)
 	inb(0x80);
 }
 
-static inline bool is_la57_enabled(void)
-{
-	uint64_t cr4;
-	asm volatile("mov %%cr4, %0" : "=rax"(cr4));
-	return (cr4 >> 12) & 1;
-}
-
-static inline uintptr_t phys_to_higher_half_data(uintptr_t address)
-{
-	if(is_la57_enabled())
-	{
-		return HIGHER_HALF_DATA_LV5 + address;
-	}
-
-	return HIGHER_HALF_DATA_LV4 + address;
-}
-
 void isr_register(int id, IRQ_Handler handler);
-
 void gdt_init(void);
 void idt_init(void);
 void pic_disable(void);
