@@ -1,7 +1,7 @@
 #include "ahci.h"
-#include "cpu.h"
-#include <string.h>
-#include <stdio.h>
+#include "../kernel/cpu.h"
+#include "../kernel/string.h"
+#include "../kernel/stdio.h"
 
 #define SATA_SIG_ATAPI             0xEB140101
 #define SATA_SIG_SEMB              0xC33C0101
@@ -33,7 +33,7 @@ static void *sendpage(void)
 	static uint8_t *p = buf;
 	uint8_t *n = (uint8_t *)((((uint64_t)p) >> 12) << 12) + 4096;
 	p += 4096;
-	printk("ALLOC PAGE %016x\n", n);
+	printf("ALLOC PAGE %016x\n", n);
 	return n;
 }
 
@@ -89,19 +89,19 @@ void port_rebase(HBA_PORT *port, struct port_data *pdata)
 
 void probe_port(HBA_MEM *abar, struct port_data *pdtable)
 {
-	//printk("here!\n");
+	//printf("here!\n");
 	glob_abar = abar;
 	int i;
 	uint32_t pi = abar->pi;
 	for(i = 0; i < 32; ++i, pi >>= 1)
 	{
-			//printk("i = %d!\n", i);
+			//printf("i = %d!\n", i);
 		if(!(pi & 1))
 		{
 			continue;
 		}
 
-			//printk("lol\n");
+			//printf("lol\n");
 
 		HBA_PORT *port = &abar->ports[i];
 		int32_t ssts = port->ssts;
@@ -117,7 +117,7 @@ void probe_port(HBA_MEM *abar, struct port_data *pdtable)
 		}
 
 		/* ITS SA(N)TA */
-		//printk("found sata device: %d\n", i);
+		//printf("found sata device: %d\n", i);
 		//port_rebase(abar->ports, &pdtable[i]); /* BUG ??? */
 	}
 
@@ -163,7 +163,7 @@ uint64_t checkAllBuses(void)
 			}
 
 			device_id = pciConfigReadWord(bus, device, 0, 2);
-			printk("PCI [%04X:%04X]\n", vendor_id, device_id);
+			printf("PCI [%04X:%04X]\n", vendor_id, device_id);
 
 			if((vendor_id != 0x8086) && (device_id) != 0x2922)
 			{

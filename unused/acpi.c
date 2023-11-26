@@ -1,10 +1,10 @@
 #include <stddef.h>
 #include <stddef.h>
-#include <stdio.h>
-#include <string.h>
-#include "stivale2.h"
+#include "../kernel/stdio.h"
+#include "../kernel/string.h"
+#include "../kernel/stivale2.h"
 #include "acpi.h"
-#include "cpu.h"
+#include "../kernel/cpu.h"
 
 static rsdt_structure_t *rsdt;
 
@@ -17,15 +17,15 @@ void acpi_init(struct stivale2_struct *stivale2_struct)
 	rsdt = (rsdt_structure_t *)phys_to_higher_half_data((uintptr_t)get_rsdp_structure()->rsdt_address);
 	if(acpi_check_sdt_header(&rsdt->header, "RSDT") != 0)
 	{
-		printk("No ACPI was found on this computer!\n");
-		printk("Kernel halted!\n");
+		printf("No ACPI was found on this computer!\n");
+		printf("Kernel halted!\n");
 
 		for (;;)
 			asm ("hlt");
 	}
 
 	madt_init();
-	printk("ACPI initialized\n");
+	printf("ACPI initialized\n");
 }
 
 int acpi_check_sdt_header(sdt_header_t *sdt_header, const char *signature)
@@ -42,26 +42,26 @@ int acpi_verify_sdt_header_checksum(sdt_header_t *sdt_header, const char *signat
 	uint8_t checksum = 0;
 	uint8_t *ptr = (uint8_t *)sdt_header;
 	uint8_t current_byte;
-	printk("Verifying %s checksum:\n", signature);
-	printk("First %d bytes are being checked: ", sdt_header->length);
+	printf("Verifying %s checksum:\n", signature);
+	printf("First %d bytes are being checked: ", sdt_header->length);
 
 	for (uint8_t i = 0; i < sdt_header->length; i++)
 	{
 		current_byte = ptr[i];
-		printk("%x ", current_byte);
+		printf("%x ", current_byte);
 		checksum += current_byte;
 	}
 
-	printk("\n");
+	printf("\n");
 	checksum = checksum & 0xFF;
 	if(checksum == 0)
 	{
-		printk("%s checksum is verified.\n", signature);
+		printf("%s checksum is verified.\n", signature);
 		return 0;
 	}
 	else
 	{
-		printk("%s checksum isn't 0! Checksum: 0x%x\n", signature, checksum);
+		printf("%s checksum isn't 0! Checksum: 0x%x\n", signature, checksum);
 		return 1;
 	}
 }
@@ -79,7 +79,7 @@ sdt_header_t *acpi_find_sdt_table(const char *signature)
 			return (sdt_header_t *)phys_to_higher_half_data((uintptr_t)current_entry);
 	}
 
-	printk("Could not find SDT with signature '%s'!\n", signature);
+	printf("Could not find SDT with signature '%s'!\n", signature);
 	return NULL;
 }
 
@@ -93,11 +93,11 @@ void rsdp_init(uint64_t rsdp_address)
 	if(rsdp->revision >= 2)
 	{
 		has_xsdt_var = true;
-		printk("ACPI Version 2.0 or above is used\n");
+		printf("ACPI Version 2.0 or above is used\n");
 	}
 	else
 	{
-		printk("ACPI Version 1.0 is used\n");
+		printf("ACPI Version 1.0 is used\n");
 	}
 }
 
@@ -106,24 +106,24 @@ void rsdp_verify_checksum(uint64_t rsdp_address)
 	uint8_t checksum = 0;
 	uint8_t *ptr = (uint8_t *)rsdp_address;
 	uint8_t current_byte;
-	printk("Verifying RSDP checksum:\n");
-	printk("20 first bytes are being checked: ");
+	printf("Verifying RSDP checksum:\n");
+	printf("20 first bytes are being checked: ");
 	for(uint8_t i = 0; i < 20; ++i)
 	{
 		current_byte = ptr[i];
-		printk("%x ", current_byte);
+		printf("%x ", current_byte);
 		checksum += current_byte;
 	}
 
-	printk("\n");
+	printf("\n");
 	if((checksum & 0xFF) == 0x00)
 	{
-		printk("RSDP checksum is verified\n");
+		printf("RSDP checksum is verified\n");
 	}
 	else
 	{
-		printk("RSDP checksum isn't 0! Checksum: 0x%x\n", checksum & 0xFF);
-		printk("Kernel halted!\n");
+		printf("RSDP checksum isn't 0! Checksum: 0x%x\n", checksum & 0xFF);
+		printf("Kernel halted!\n");
 		halt();
 	}
 }
@@ -155,8 +155,8 @@ void madt_init(void)
 	madt = (madt_structure_t *)(uintptr_t)acpi_find_sdt_table("APIC");
 	if(madt == NULL)
 	{
-		printk("No MADT was found on this computer!\n");
-		printk("Kernel halted!\n");
+		printf("No MADT was found on this computer!\n");
+		printf("Kernel halted!\n");
 		halt();
 	}
 
@@ -167,22 +167,22 @@ void madt_init(void)
 		switch(*table_ptr)
 		{
 		case PROCESSOR_LOCAL_APIC:
-			printk("MADT Initialization: Found local APIC\n");
+			printf("MADT Initialization: Found local APIC\n");
 			madt_lapics[madt_lapics_i++] = (madt_lapic_t *)table_ptr;
 			break;
 
 		case IO_APIC:
-			printk("MADT Initialization: Found IO APIC\n");
+			printf("MADT Initialization: Found IO APIC\n");
 			madt_io_apics[madt_io_apics_i++] = (madt_io_apic_t *)table_ptr;
 			break;
 
 		case INTERRUPT_SOURCE_OVERRIDE:
-			printk("MADT Initialization: Found interrupt source override\n");
+			printf("MADT Initialization: Found interrupt source override\n");
 			madt_isos[madt_isos_i++] = (madt_iso_t *)table_ptr;
 			break;
 
 		case LAPIC_NMI:
-			printk("MADT Initialization: Found local APIC non maskable interrupt\n");
+			printf("MADT Initialization: Found local APIC non maskable interrupt\n");
 			madt_lapic_nmis[madt_lapic_nmis_i++] = (madt_lapic_nmi_t *)table_ptr;
 			break;
 		}
@@ -197,8 +197,8 @@ void apic_init(void)
 {
 	if(!apic_is_available())
 	{
-		printk("No APIC was found on this computer!\n");
-		printk("Kernel halted!\n");
+		printf("No APIC was found on this computer!\n");
+		printf("Kernel halted!\n");
 		halt();
 	}
 

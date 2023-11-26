@@ -1,7 +1,7 @@
 #ifndef __WINDOW_H__
 #define __WINDOW_H__
 
-#include "types.h"
+#include "../kernel/types.h"
 
 typedef struct
 {

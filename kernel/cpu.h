@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "kprintf.h"
+#include <stdio.h>
 #include "stivale2.h"
 
 #define SPURIOUS_INTERRUPT 255
@@ -156,7 +156,6 @@ struct TSS
 	uint16_t iopb_offset;
 } __attribute__((packed));
 
-__attribute__((aligned(4096)))
 struct GDT
 {
 	struct GDT_Descriptor null;
@@ -169,7 +168,7 @@ struct GDT
 	struct GDT_Descriptor ovmf_code;
 	struct GDT_Descriptor tss_low;
 	struct GDT_Descriptor tss_high;
-} __attribute__((packed));
+} __attribute__((aligned(4096))) __attribute__((packed));
 
 struct GDT_Pointer
 {

@@ -1,5 +1,5 @@
 #include "window.h"
-#include "graphics.h"
+#include "../kernel/graphics.h"
 
 #define BORDER_COLOR GFX_PURPLE
 #define BORDER_WIDTH  2

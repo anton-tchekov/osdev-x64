@@ -94,11 +94,12 @@ void graphics_char(uint32_t x, uint32_t y, uint32_t c,
 		fb += graphics.Pitch;
 		dbl += graphics.Pitch;
 	}
+    (void)font;
 }
 
 void graphics_cursor(u32 x, u32 y, u32 w, u32 h, const char *cursor)
 {
-	/* Cursor is not drawn on the double buffer so it can be used
+	/* Cursor is not drawn on the double buffer, so it can be used
 		to restore the pixels behind the cursor */
 	u32 *start;
 	u32 xs, xe, ye;
