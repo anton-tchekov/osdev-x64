@@ -1,14 +1,21 @@
 #include "module.h"
+#include "modfunc.h"
 
 static const char name[] = "Template Module";
 static const char author[] = "Anton Tchekov";
 static const char desc[] = "Basic executable module template that does essentially nothing";
+
+static void mmain(){
+    printf("Hello from Template Module\n");
+}
 
 static void signal_handler(int signal_id, void *data)
 {
     switch(signal_id)
     {
         case SIGNAL_ID_INIT:
+            load_functions(data);
+            mmain();
             break;
     }
 }

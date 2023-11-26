@@ -226,14 +226,16 @@ uint64_t isr_handler(uint64_t rsp)
 			"EXCEPTION OCCURRED!\n\n"
 			"ISR-No. %"PRId64": %s\n"
 			"Error code: 0x%0"PRIx64"\n\n\n"
-			"Register dump:\n\n"
+			"Register dump:\n\n",
+                cpu->isr_number, exceptions[cpu->isr_number],
+                cpu->error_code);
+
+        printf(
             "  rax: 0x%016"PRIx64"   rbx:    0x%016"PRIx64"   rcx: 0x%016"PRIx64"   rdx: 0x%016"PRIx64"\n"
 			"  rsi: 0x%016"PRIx64"   rdi:    0x%016"PRIx64"   rbp: 0x%016"PRIx64"   r8:  0x%016"PRIx64"\n"
 			"  r9:  0x%016"PRIx64"   r10:    0x%016"PRIx64"   r11: 0x%016"PRIx64"   r12: 0x%016"PRIx64"\n"
 			"  r13: 0x%016"PRIx64"   r14:    0x%016"PRIx64"   r15: 0x%016"PRIx64"   ss:  0x%016"PRIx64"\n"
 			"  rsp: 0x%016"PRIx64"   rflags: 0x%016"PRIx64"   cs   0x%016"PRIx64"   rip: 0x%016"PRIx64"\n",
-			cpu->isr_number, exceptions[cpu->isr_number],
-			cpu->error_code,
 			cpu->rax, cpu->rbx,    cpu->rcx, cpu->rdx,
 			cpu->rsi, cpu->rdi,    cpu->rbp, cpu->r8,
 			cpu->r9,  cpu->r10,    cpu->r11, cpu->r12,

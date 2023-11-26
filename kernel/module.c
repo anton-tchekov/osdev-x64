@@ -7,6 +7,12 @@
 #include <inttypes.h>
 #include "../modules/module.h"
 
+typedef void (*SignalHandlerFn)(int, void *);
+
+static const uint64_t functions[] = {
+        (uint64_t) printf
+};
+
 static ModuleSection* getSection(ModuleHeader* header, ModuleSectionType type) {
     for (int i = 0; i < header->NumSections; ++i) {
         if(header->Sections[i].Type == type) {
@@ -52,6 +58,15 @@ void module_init(struct stivale2_struct *s)
                getSectionString(header, MODULE_SECTION_NAME),
                getSectionString(header, MODULE_SECTION_DESCRIPTION));
 
+        if(header->Type == MODULE_TYPE_EXECUTABLE)
+        {
+            ModuleSection *sect = getSection(header, MODULE_SECTION_SIGNAL_HANDLER);
+            SignalHandlerFn fn = (SignalHandlerFn)((char *)header + sect->Start);
+            ModuleInit init_data = {
+                .Functions = functions,
+            };
+            fn(SIGNAL_ID_INIT, &init_data);
+        }
     }
 }
 

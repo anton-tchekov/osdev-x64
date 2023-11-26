@@ -45,4 +45,14 @@ typedef struct {
     ModuleSection Sections[];
 } ModuleHeader;
 
+typedef enum {
+    KERNEL_FN_PRINTF
+} ModuleFunctions;
+
+typedef struct {
+    const uint64_t *Functions;
+} ModuleInit;
+
+void load_functions(void* data);
+
 #endif //OSDEV_X64_MODULE_H
