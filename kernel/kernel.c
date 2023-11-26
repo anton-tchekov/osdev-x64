@@ -5,9 +5,9 @@
 #include "ps2.h"
 #include "shell/shell.h"
 #include <stdio.h>
-#include <inttypes.h>
 #include "cmos.h"
 #include "terminal.h"
+#include "module.h"
 
 static void boot_any_key(int key, int ascii, int released)
 {
@@ -33,6 +33,8 @@ void kmain(struct stivale2_struct *s)
 
 	ps2_init();
     rtc_read();
+
+    module_init(s);
 
 	printf("Press enter to continue\n");
 	keyboard_event_register(boot_any_key);
