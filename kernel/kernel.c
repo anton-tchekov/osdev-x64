@@ -5,6 +5,7 @@
 #include "ps2.h"
 #include "shell/shell.h"
 #include <stdio.h>
+#include <inttypes.h>
 #include "cmos.h"
 #include "terminal.h"
 
@@ -18,14 +19,14 @@ static void boot_any_key(int key, int ascii, int released)
     (void)key, (void)released;
 }
 
-void kmain(struct stivale2_struct *stivale2_struct)
+void kmain(struct stivale2_struct *s)
 {
-	pmm_init(stivale2_struct);
+	pmm_init(s);
 	serial_init();
-	graphics_init(stivale2_struct, GFX_BLACK);
+	graphics_init(s, GFX_BLACK);
 	terminal_init(graphics_width(), graphics_height());
 	printf("Framebuffer and serial initialized\n");
-	memory_map_print(stivale2_struct);
+	memory_map_print(s);
 	gdt_init();
 	idt_init();
 	printf("CPU Vendor ID String: %s\n", cpu_get_vendor_string());

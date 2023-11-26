@@ -227,11 +227,11 @@ uint64_t isr_handler(uint64_t rsp)
 			"ISR-No. %"PRId64": %s\n"
 			"Error code: 0x%0"PRIx64"\n\n\n"
 			"Register dump:\n\n"
-            "  rax: 0x%0"PRIx64"  rbx:    0x%0"PRIx64"   rcx: 0x%0"PRIx64"   rdx: 0x%0"PRIx64"\n"
-			"  rsi: 0x%0"PRIx64"   rdi:    0x%0"PRIx64"   rbp: 0x%0"PRIx64"   r8:  0x%0"PRIx64"\n"
-			"  r9:  0x%0"PRIx64"   r10:    0x%0"PRIx64"   r11: 0x%0"PRIx64"   r12: 0x%0"PRIx64"\n"
-			"  r13: 0x%0"PRIx64"   r14:    0x%0"PRIx64"   r15: 0x%0"PRIx64"   ss:  0x%0"PRIx64"\n"
-			"  rsp: 0x%0"PRIx64"   rflags: 0x%0"PRIx64"   cs   0x%0"PRIx64"   rip: 0x%0"PRIx64"\n",
+            "  rax: 0x%016"PRIx64"   rbx:    0x%016"PRIx64"   rcx: 0x%016"PRIx64"   rdx: 0x%016"PRIx64"\n"
+			"  rsi: 0x%016"PRIx64"   rdi:    0x%016"PRIx64"   rbp: 0x%016"PRIx64"   r8:  0x%016"PRIx64"\n"
+			"  r9:  0x%016"PRIx64"   r10:    0x%016"PRIx64"   r11: 0x%016"PRIx64"   r12: 0x%016"PRIx64"\n"
+			"  r13: 0x%016"PRIx64"   r14:    0x%016"PRIx64"   r15: 0x%016"PRIx64"   ss:  0x%016"PRIx64"\n"
+			"  rsp: 0x%016"PRIx64"   rflags: 0x%016"PRIx64"   cs   0x%016"PRIx64"   rip: 0x%016"PRIx64"\n",
 			cpu->isr_number, exceptions[cpu->isr_number],
 			cpu->error_code,
 			cpu->rax, cpu->rbx,    cpu->rcx, cpu->rdx,
@@ -327,7 +327,7 @@ void memory_map_print(struct stivale2_struct *s)
 	for(i = 0; i < memory_map->entries; ++i)
 	{
 		struct stivale2_mmap_entry *cur = &memory_map->memmap[i];
-		printf("%4"PRId64":  0x%0"PRIx64" | 0x%0"PRIx64" | %s\n",
+		printf("%4"PRId64":  0x%016"PRIx64" | 0x%016"PRIx64" | %s\n",
 			i, cur->base, cur->length, get_memory_map_entry_type(cur->type));
 	}
 }
