@@ -15,27 +15,32 @@ typedef struct
 
 static Shell shell;
 
-static void shell_handle_command(char *cmd)
+static void shell_command(char *cmd)
 {
 	char *argv[16];
-	char *p = cmd;
-	int argc = 0;
-	int i;
+	char *p;
+	int argc, i;
 
+	argc = 0;
+	p = cmd;
+	i = 1;
 	while(*p)
 	{
-		while(isspace(*p))
+		if(*p == ' ')
 		{
-			++p;
+			*p = '\0';
+			i = 1;
+		}
+		else
+		{
+			if(i)
+			{
+				argv[argc++] = p;
+				i = 0;
+			}
 		}
 
-		argv[argc++] = p;
-		while(*p && !isspace(*p))
-		{
-			++p;
-		}
-
-		*p++ = '\0';
+		++p;
 	}
 
 	printf("argc = %d\n", argc);
@@ -45,24 +50,18 @@ static void shell_handle_command(char *cmd)
 	}
 }
 
-static void shell_clear_buffer(void)
-{
-	shell.Buffer[0] = '\0';
-	shell.Cursor = 0;
-}
-
 static void shell_prompt(void)
 {
+	shell.Cursor = 0;
 	terminal_set_color(TERMINAL_GREEN, TERMINAL_BLACK);
 	printf("\nImaginaryOS> ");
-	shell_clear_buffer();
 	terminal_set_color(TERMINAL_WHITE, TERMINAL_BLACK);
 }
 
 void shell_enter(void)
 {
 	printf("\n");
-	shell_handle_command(shell.Buffer);
+	shell_command(shell.Buffer);
 	shell_prompt();
 }
 
@@ -80,6 +79,7 @@ static void event_key(int key, int ascii, int released)
 	}
 	else if(ascii == '\n')
 	{
+		shell.Buffer[shell.Cursor] = '\0';
 		shell_enter();
 	}
 	else if(ascii == '\b' && shell.Cursor > 0)
