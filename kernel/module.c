@@ -9,7 +9,7 @@ static const uint64_t functions[] =
 	(uint64_t)printf
 };
 
-static ModuleSection* getSection(ModuleHeader* header, ModuleSectionType type)
+static ModuleSection* get_section(ModuleHeader *header, ModuleSectionType type)
 {
 	uint32_t i;
 	for(i = 0; i < header->NumSections; ++i)
@@ -23,9 +23,9 @@ static ModuleSection* getSection(ModuleHeader* header, ModuleSectionType type)
 	return NULL;
 }
 
-static char *getSectionString(ModuleHeader* header, ModuleSectionType type)
+static char *get_section_str(ModuleHeader *header, ModuleSectionType type)
 {
-	return (char *)header + getSection(header, type)->Start;
+	return (char *)header + get_section(header, type)->Start;
 }
 
 void module_init(struct stivale2_struct *s)
@@ -55,13 +55,13 @@ void module_init(struct stivale2_struct *s)
 				header->NumSections, cur->base, cur->length);
 
 		printf("Author: %s\nName: %s\nDescription: %s\n",
-				getSectionString(header, MODULE_SECTION_AUTHOR),
-				getSectionString(header, MODULE_SECTION_NAME),
-				getSectionString(header, MODULE_SECTION_DESCRIPTION));
+				get_section_str(header, MODULE_SECTION_AUTHOR),
+				get_section_str(header, MODULE_SECTION_NAME),
+				get_section_str(header, MODULE_SECTION_DESCRIPTION));
 
 		if(header->Type == MODULE_TYPE_EXECUTABLE)
 		{
-			ModuleSection *sect = getSection(header, MODULE_SECTION_SIGNAL_HANDLER);
+			ModuleSection *sect = get_section(header, MODULE_SECTION_SIGNAL_HANDLER);
 			SignalHandlerFn fn = (SignalHandlerFn)((char *)header + sect->Start);
 			ModuleInit init_data =
 			{

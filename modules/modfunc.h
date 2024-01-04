@@ -3,6 +3,6 @@
 
 typedef void (*printf_fn)(const char *s, ...);
 
-extern printf_fn printf;
+#define printf(...) ((printf_fn)fns[KERNEL_FN_PRINTF])(__VA_ARGS__)
 
 #endif

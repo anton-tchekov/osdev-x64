@@ -1,5 +1,7 @@
 #include "../../kernel/module.h"
-#include "modfunc.h"
+#include "../modfunc.h"
+
+const uint64_t *fns;
 
 static const char name[] = "Template Module";
 static const char author[] = "Anton Tchekov";
@@ -16,7 +18,7 @@ static void signal_handler(int signal_id, void *data)
 	switch(signal_id)
 	{
 	case SIGNAL_ID_INIT:
-		load_functions(data);
+		fns = ((ModuleInit *)data)->Functions;
 		mmain();
 		break;
 	}

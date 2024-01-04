@@ -58,7 +58,6 @@ typedef struct
 	const uint64_t *Functions;
 } ModuleInit;
 
-void load_functions(void* data);
 void module_init(struct stivale2_struct *s);
 
 #endif
