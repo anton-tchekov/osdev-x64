@@ -1,5 +1,4 @@
 #include "terminal.h"
-#include "types.h"
 #include "graphics.h"
 #include <string.h>
 #include <stdlib.h>
@@ -18,12 +17,12 @@ typedef struct
 
 static Terminal terminal;
 
-static inline u16 vga_entry(char c, u8 color)
+static inline uint16_t vga_entry(char c, uint8_t color)
 {
-	return (u16)c | (u16)color << 8;
+	return (uint16_t)c | (uint16_t)color << 8;
 }
 
-static inline u8 vga_color(u8 fg, u8 bg)
+static inline uint8_t vga_color(uint8_t fg, uint8_t bg)
 {
 	return fg | bg << 4;
 }
@@ -43,7 +42,7 @@ void terminal_init(int w, int h)
 		terminal.Size);
 }
 
-void terminal_put(char c, u8 fg, u8 bg, u32 x, u32 y)
+void terminal_put(char c, uint8_t fg, uint8_t bg, uint32_t x, uint32_t y)
 {
 	terminal.Buffer[y * terminal.Width + x] = vga_entry(c, vga_color(fg, bg));
 	graphics_char(8 * x, 16 * y, c, GFX_WHITE, GFX_BLACK, 0);

@@ -2,7 +2,6 @@
 #define __GRAPHICS_H__
 
 #include "stivale2.h"
-#include "types.h"
 
 #define GFX_BLACK   0xFF3B4252
 #define GFX_RED     0xFFBF616A
@@ -22,7 +21,7 @@ void graphics_rect(uint32_t x, uint32_t y,
 void graphics_char(uint32_t x, uint32_t y, uint32_t c,
 	uint32_t fg, uint32_t bg, uint32_t font);
 
-void graphics_cursor(u32 x, u32 y, u32 w, u32 h, const char *cursor);
-void graphics_restore(u32 x, u32 y, u32 w, u32 h);
+void graphics_cursor(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const char *cursor);
+void graphics_restore(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
 #endif
