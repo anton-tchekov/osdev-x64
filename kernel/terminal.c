@@ -1,5 +1,7 @@
 #include "terminal.h"
 #include "graphics.h"
+#include "serial.h"
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -7,8 +9,8 @@ typedef struct
 {
 	int X;
 	int Y;
-	TerminalColor BG;
-	TerminalColor FG;
+	int BG;
+	int FG;
 	int Width;
 	int Height;
 	int Size;
@@ -27,33 +29,37 @@ static inline uint8_t vga_color(uint8_t fg, uint8_t bg)
 	return fg | bg << 4;
 }
 
-void terminal_set_color(TerminalColor fg, TerminalColor bg) {
+void terminal_set_color(int fg, int bg)
+{
 	terminal.FG = fg;
 	terminal.BG = bg;
 }
 
-uint32_t colorLookup(TerminalColor c) {
-	switch (c)
+void terminal_set_fg(int fg)
+{
+	terminal.FG = fg;
+}
+
+void terminal_set_bg(int bg)
+{
+	terminal.BG = bg;
+}
+
+static uint32_t color_lookup(int c)
+{
+	static const uint32_t colors[] =
 	{
-		case TERMINAL_BLACK:
-			return 0xFF3B4252;
-		case TERMINAL_WHITE:
-			return 0xFFE5E9F0;
-		case TERMINAL_RED:
-			return 0xFFBF616A;
-		case TERMINAL_BLUE:
-			return 0xFF81A1C1;
-		case TERMINAL_GREEN:
-			return 0xFFA3BE8C;
-		case TERMINAL_CYAN:
-			return 0xFF88C0D0;
-		case TERMINAL_PURPLE:
-			return 0xFFB48EAD;
-		case TERMINAL_YELLOW:
-			return 0xFFEBCA8B;
-		default:
-			return 0xFFFFFFFF;
-	}
+		GFX_BLACK,
+		GFX_RED,
+		GFX_GREEN,
+		GFX_YELLOW,
+		GFX_BLUE,
+		GFX_PURPLE,
+		GFX_CYAN,
+		GFX_WHITE,
+	};
+
+	return colors[c];
 }
 
 void terminal_init(int w, int h)
@@ -71,15 +77,32 @@ void terminal_init(int w, int h)
 		terminal.Size);
 }
 
-void terminal_put(char c, TerminalColor fg, TerminalColor bg, uint32_t x, uint32_t y)
+void terminal_put(int c, int fg, int bg, uint32_t x, uint32_t y)
 {
 	terminal.Buffer[y * terminal.Width + x] = vga_entry(c, vga_color(fg, bg));
-	graphics_char(8 * x, 16 * y, c, colorLookup(fg), colorLookup(bg), 0);
+	graphics_char(8 * x, 16 * y, c, color_lookup(fg), color_lookup(bg), 0);
 }
 
 void terminal_char(int c)
 {
-	if(c == '\n')
+	serial_tx(c);
+	if(c == '\b')
+	{
+		if(terminal.X == 0)
+		{
+			if(terminal.Y > 0)
+			{
+				--terminal.Y;
+			}
+		}
+		else
+		{
+			--terminal.X;
+		}
+
+		terminal_put(' ', terminal.FG, terminal.BG, terminal.X, terminal.Y);
+	}
+	else if(c == '\n')
 	{
 		terminal.X = 0;
 		++terminal.Y;

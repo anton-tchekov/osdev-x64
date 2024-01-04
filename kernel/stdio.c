@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "terminal.h"
-#include "serial.h"
 
 void printf(const char *fmt, ...)
 {
@@ -10,7 +9,6 @@ void printf(const char *fmt, ...)
 	va_start(ptr, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ptr);
 	terminal_print(buf);
-	serial_tx_str(buf);
 	va_end(ptr);
 }
 
