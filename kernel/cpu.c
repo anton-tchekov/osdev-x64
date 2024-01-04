@@ -205,12 +205,6 @@ void idt_init(void)
 	printf("IDT initialized\n");
 }
 
-void pic_disable(void)
-{
-	outb(PIC2_DATA, 0xFF);
-	outb(PIC1_DATA, 0xFF);
-}
-
 void isr_register(int id, IRQ_Handler handler)
 {
 	irq_handlers[id] = handler;

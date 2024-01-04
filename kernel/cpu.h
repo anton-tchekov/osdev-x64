@@ -202,7 +202,6 @@ static inline void io_wait(void)
 void isr_register(int id, IRQ_Handler handler);
 void gdt_init(void);
 void idt_init(void);
-void pic_disable(void);
 void pic_remap(void);
 void pmm_init(struct stivale2_struct *s);
 void memory_map_print(struct stivale2_struct *s);
