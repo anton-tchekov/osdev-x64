@@ -15,7 +15,7 @@ void *malloc(size_t size)
 void *malloc_align(size_t size, size_t align)
 {
 	uintptr_t n = (uintptr_t)p;
-	uintptr_t remainder = n % align;
+	uintptr_t remainder = n & (align - 1);
 	void *ret;
 	if(remainder == 0)
 	{

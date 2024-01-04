@@ -68,6 +68,8 @@ void terminal_char(int c)
 
 	if(terminal.Y >= terminal.Height)
 	{
+		int x, y;
+
 		/* Scroll Up */
 		memmove(terminal.Buffer, terminal.Buffer + terminal.Width,
 				(terminal.Size - terminal.Width) * sizeof(*terminal.Buffer));
@@ -76,23 +78,17 @@ void terminal_char(int c)
 		memset16(terminal.Buffer + terminal.Size - terminal.Width,
 			vga_entry(' ', vga_color(terminal.FG, terminal.BG)), terminal.Width);
 
+		for(y = 0; y < terminal.Height; ++y)
 		{
-			/* FIXME */
-			int x, y;
-			for(y = 0; y < terminal.Height; ++y)
+			for(x = 0; x < terminal.Width; ++x)
 			{
-				for(x = 0; x < terminal.Width; ++x)
-				{
-					terminal_put(terminal.Buffer[y * terminal.Width + x],
-						terminal.FG, terminal.BG, x, y);
-				}
+				terminal_put(terminal.Buffer[y * terminal.Width + x],
+					terminal.FG, terminal.BG, x, y);
 			}
 		}
 
 		terminal.Y = terminal.Height - 1;
 	}
-
-	/*cursor_move(terminal.X, terminal.Y);*/
 }
 
 void terminal_print(const char *s)
