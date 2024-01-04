@@ -5,7 +5,7 @@ static uint8_t *p;
 void allocator_init(uintptr_t start, size_t size)
 {
 	p = (uint8_t *)start;
-    (void)size;
+	(void)size;
 }
 
 void *malloc(size_t size)

@@ -1,7 +1,3 @@
-//
-// Created by tim on 11/26/23.
-//
-
 #include "module.h"
 #include <stdio.h>
 #include <inttypes.h>
@@ -69,4 +65,3 @@ void module_init(struct stivale2_struct *s)
         }
     }
 }
-

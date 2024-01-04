@@ -1,5 +1,5 @@
-#ifndef __KEYBOARD_H__
-#define __KEYBOARD_H__
+#ifndef __PS2_H__
+#define __PS2_H__
 
 #include "keys.h"
 
@@ -7,15 +7,10 @@
 #define MOUSE_CLICK_RIGHT   0x02
 #define MOUSE_CLICK_MIDDLE  0x04
 
-/* delta_x, delta_y, buttons */
-typedef void (*MouseEvent)(int, int, int);
-
-void ps2_init(void);
-void mouse_event_register(MouseEvent handler);
-
 /* key, codepoint, released */
 typedef void (*KeyEvent)(int, int, int);
 
+void ps2_init(void);
 void keyboard_event_register(KeyEvent handler);
 
-#endif /* __KEYBOARD_H__ */
+#endif

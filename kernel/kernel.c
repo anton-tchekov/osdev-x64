@@ -16,7 +16,7 @@ static void boot_any_key(int key, int ascii, int released)
 		shell_init();
 	}
 
-    (void)key, (void)released;
+	(void)key, (void)released;
 }
 
 void kmain(struct stivale2_struct *s)
@@ -32,9 +32,9 @@ void kmain(struct stivale2_struct *s)
 	printf("CPU Vendor ID String: %s\n", cpu_get_vendor_string());
 
 	ps2_init();
-    rtc_read();
+	rtc_read();
 
-    module_init(s);
+	module_init(s);
 
 	printf("Press enter to continue\n");
 	keyboard_event_register(boot_any_key);

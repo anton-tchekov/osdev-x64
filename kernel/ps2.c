@@ -224,6 +224,6 @@ void keyboard_event_register(KeyEvent handler)
 
 void ps2_init(void)
 {
-    isr_register(1, keyboard_irq_handler);
-    printf("PS/2 drivers initialized\n");
+	isr_register(1, keyboard_irq_handler);
+	printf("PS/2 drivers initialized\n");
 }

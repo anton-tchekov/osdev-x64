@@ -63,4 +63,4 @@ static inline int tolower(int c)
 	return c;
 }
 
-#endif /* __CTYPE_H__ */
+#endif

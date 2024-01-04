@@ -1,9 +1,5 @@
-//
-// Created by tim on 11/26/23.
-//
-
-#ifndef _MODULE_H
-#define _MODULE_H
+#ifndef __MODULE_H__
+#define __MODULE_H__
 
 #include "stivale2.h"
 

@@ -94,5 +94,6 @@ void graphics_char(uint32_t x, uint32_t y, uint32_t c,
 		fb += graphics.Pitch;
 		dbl += graphics.Pitch;
 	}
-    (void)font;
+
+	(void)font;
 }
