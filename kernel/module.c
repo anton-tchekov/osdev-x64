@@ -11,7 +11,7 @@ static const uint64_t functions[] =
 
 static ModuleSection* getSection(ModuleHeader* header, ModuleSectionType type)
 {
-	int i;
+	uint32_t i;
 	for(i = 0; i < header->NumSections; ++i)
 	{
 		if(header->Sections[i].Type == type)
