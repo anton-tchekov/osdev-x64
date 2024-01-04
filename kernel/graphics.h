@@ -21,7 +21,4 @@ void graphics_rect(uint32_t x, uint32_t y,
 void graphics_char(uint32_t x, uint32_t y, uint32_t c,
 	uint32_t fg, uint32_t bg, uint32_t font);
 
-void graphics_cursor(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const char *cursor);
-void graphics_restore(uint32_t x, uint32_t y, uint32_t w, uint32_t h);
-
 #endif
