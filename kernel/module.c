@@ -1,7 +1,6 @@
 #include "module.h"
 #include <stdio.h>
 #include <inttypes.h>
-#include "../modules/module.h"
 
 typedef void (*SignalHandlerFn)(int, void *);
 

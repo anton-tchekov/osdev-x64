@@ -1,4 +1,4 @@
-#include "module.h"
+#include "../kernel/module.h"
 #include "modfunc.h"
 #include <stddef.h>
 
