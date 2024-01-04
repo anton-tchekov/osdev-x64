@@ -5,4 +5,4 @@
 
 extern const uint8_t Terminus16_Bold[];
 
-#endif /* __TERMINUS16_BOLD_H__ */
+#endif

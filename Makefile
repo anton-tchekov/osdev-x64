@@ -5,10 +5,13 @@ CC = gcc
 AS = @nasm
 LD = ld
 
-CC_FLAGS = -Wall -Wextra \
+CC_FLAGS = \
+	-Wall \
+	-Wextra \
 	-Werror=implicit-function-declaration \
 	-Werror=discarded-qualifiers \
-	-O2 -pipe \
+	-O2 \
+	-pipe \
 	-Ikernel/ \
 	-std=gnu11 \
 	-ffreestanding \
