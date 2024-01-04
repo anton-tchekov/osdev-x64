@@ -52,6 +52,7 @@
       <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
       <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="1" />
       <option name="BRACE_STYLE" value="2" />
+      <option name="ELSE_ON_NEW_LINE" value="true" />
       <option name="SPACE_WITHIN_EMPTY_ARRAY_INITIALIZER_BRACES" value="true" />
       <option name="SPACE_AFTER_TYPE_CAST" value="false" />
       <option name="SPACE_BEFORE_METHOD_PARENTHESES" value="true" />

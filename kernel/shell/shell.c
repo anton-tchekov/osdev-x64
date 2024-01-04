@@ -2,7 +2,7 @@
 #include "ps2.h"
 #include <ctype.h>
 #include <stdio.h>
-#include <string.h>
+#include "terminal.h"
 
 #define SHELL_BUFFER_SIZE 256
 
@@ -53,8 +53,10 @@ static void shell_clear_buffer(void)
 
 static void shell_prompt(void)
 {
+	terminal_set_color(TERMINAL_GREEN, TERMINAL_BLACK);
 	printf("\nImaginaryOS> ");
 	shell_clear_buffer();
+	terminal_set_color(TERMINAL_WHITE, TERMINAL_BLACK);
 }
 
 void shell_enter(void)
@@ -94,6 +96,7 @@ void shell_init(void)
 	shell.Cursor = 0;
 	shell.Line = 0;
 	keyboard_event_register(event_key);
+	terminal_set_color(TERMINAL_RED, TERMINAL_BLACK);
 	printf("\n\nImaginaryOS made by Anton and Tim\n\n"
 		"###########    ###########\n"
 		"###########    ###########\n"
