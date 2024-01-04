@@ -1,4 +1,7 @@
 #include "module.h"
+#include "ps2.h"
+#include "terminal.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <inttypes.h>
 
@@ -6,7 +9,10 @@ typedef void (*SignalHandlerFn)(int, void *);
 
 static const uint64_t functions[] =
 {
-	(uint64_t)printf
+	(uint64_t)printf,
+	(uint64_t)isprint,
+	(uint64_t)terminal_set_color,
+	(uint64_t)keyboard_event_register,
 };
 
 static ModuleSection* get_section(ModuleHeader *header, ModuleSectionType type)

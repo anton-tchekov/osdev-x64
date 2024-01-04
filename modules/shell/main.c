@@ -1,8 +1,12 @@
-#include "shell.h"
-#include "ps2.h"
-#include <ctype.h>
-#include <stdio.h>
-#include "terminal.h"
+#include "../../kernel/module.h"
+#include "../../kernel/terminal.h"
+#include "../modfunc.h"
+
+const uint64_t *fns;
+
+static const char name[] = "Shell";
+static const char author[] = "Tim Gabrikowski";
+static const char desc[] = "Shell module";
 
 #define SHELL_BUFFER_SIZE 256
 
@@ -59,7 +63,7 @@ static void shell_prompt(void)
 	printf(" ");
 }
 
-void shell_enter(void)
+static void shell_enter(void)
 {
 	printf("\n");
 	shell_command(shell.Buffer);
@@ -92,7 +96,7 @@ static void event_key(int key, int ascii, int released)
 	(void)key;
 }
 
-void shell_init(void)
+static void shell_init(void)
 {
 	shell.Cursor = 0;
 	shell.Line = 0;
@@ -113,3 +117,48 @@ void shell_init(void)
 
 	shell_prompt();
 }
+
+static void mmain(void)
+{
+	shell_init();
+}
+
+static void signal_handler(int signal_id, void *data)
+{
+	switch(signal_id)
+	{
+	case SIGNAL_ID_INIT:
+		fns = ((ModuleInit *)data)->Functions;
+		mmain();
+		break;
+	}
+}
+
+static const ModuleHeader module_header
+	__attribute__((section(".header")))
+	__attribute__((__used__)) =
+{
+	.Magic = MODULE_MAGIC,
+	.Type = MODULE_TYPE_EXECUTABLE,
+	.Id = MODULE_ID_TEMPLATE,
+	.NumSections = 4,
+	.Sections =
+	{
+		{
+			.Type = MODULE_SECTION_NAME,
+			.Start = (uintptr_t)name
+		},
+		{
+			.Type = MODULE_SECTION_AUTHOR,
+			.Start = (uintptr_t)author
+		},
+		{
+			.Type = MODULE_SECTION_DESCRIPTION,
+			.Start = (uintptr_t)desc
+		},
+		{
+			.Type = MODULE_SECTION_SIGNAL_HANDLER,
+			.Start = (uintptr_t)signal_handler
+		},
+	}
+};

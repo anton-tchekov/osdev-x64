@@ -50,7 +50,10 @@ typedef struct
 
 typedef enum
 {
-	KERNEL_FN_PRINTF
+	KERNEL_FN_PRINTF,
+	KERNEL_FN_ISPRINT,
+	KERNEL_FN_TERMINAL_SET_COLOR,
+	KERNEL_FN_KEYBOARD_REGISTER_FN
 } ModuleFunctions;
 
 typedef struct
