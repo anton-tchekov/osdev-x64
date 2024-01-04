@@ -5,7 +5,8 @@ static const char name[] = "Template Module";
 static const char author[] = "Anton Tchekov";
 static const char desc[] = "Basic executable module template that does essentially nothing";
 
-static void mmain(){
+static void mmain()
+{
     printf("Hello from Template Module\n");
 }
 

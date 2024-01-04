@@ -4,7 +4,8 @@
 
 printf_fn printf = NULL;
 
-void load_functions(void* data) {
+void load_functions(void* data)
+{
     ModuleInit *mi = (ModuleInit *)data;
     uint64_t *fns = mi->Functions;
 

@@ -17,7 +17,7 @@ Runs the qemu emulator
 ./emu.sh
 ```
 
-## Directory Structure (that we want)
+## Directory Structure
 
 ```
 - iso_root

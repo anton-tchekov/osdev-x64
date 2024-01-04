@@ -13,12 +13,9 @@ typedef struct
     char Buffer[SHELL_BUFFER_SIZE];
 } Shell;
 
-
-
 static Shell shell;
 
 static void shell_handle_command (char* cmd);
-
 
 static void event_key (int key, int ascii, int released) {
     if(released)
@@ -38,7 +35,6 @@ static void event_key (int key, int ascii, int released) {
     }
     (void)key;
 }
-
 
 void shell_init(){
     shell.Cursor = 0;

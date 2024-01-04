@@ -130,8 +130,10 @@ void gdt_init(void)
 	gdt.tss_high.limit_19_16_and_flags = 0x00;
 	gdt.tss_high.base_31_24 = 0;
 
-	for (uint64_t i = 0; i < sizeof(tss); i++)
+	for(uint64_t i = 0; i < sizeof(tss); ++i)
+	{
 		((uint8_t *)(void *)&tss)[i] = 0;
+	}
 
 	uint64_t tss_base = (uint64_t)&tss;
 
@@ -227,11 +229,11 @@ uint64_t isr_handler(uint64_t rsp)
 			"ISR-No. %"PRId64": %s\n"
 			"Error code: 0x%0"PRIx64"\n\n\n"
 			"Register dump:\n\n",
-                cpu->isr_number, exceptions[cpu->isr_number],
-                cpu->error_code);
+				cpu->isr_number, exceptions[cpu->isr_number],
+				cpu->error_code);
 
-        printf(
-            "  rax: 0x%016"PRIx64"   rbx:    0x%016"PRIx64"   rcx: 0x%016"PRIx64"   rdx: 0x%016"PRIx64"\n"
+		printf(
+			"  rax: 0x%016"PRIx64"   rbx:    0x%016"PRIx64"   rcx: 0x%016"PRIx64"   rdx: 0x%016"PRIx64"\n"
 			"  rsi: 0x%016"PRIx64"   rdi:    0x%016"PRIx64"   rbp: 0x%016"PRIx64"   r8:  0x%016"PRIx64"\n"
 			"  r9:  0x%016"PRIx64"   r10:    0x%016"PRIx64"   r11: 0x%016"PRIx64"   r12: 0x%016"PRIx64"\n"
 			"  r13: 0x%016"PRIx64"   r14:    0x%016"PRIx64"   r15: 0x%016"PRIx64"   ss:  0x%016"PRIx64"\n"
@@ -242,7 +244,7 @@ uint64_t isr_handler(uint64_t rsp)
 			cpu->r13, cpu->r14,    cpu->r15, cpu->ss,
 			cpu->rsp, cpu->rflags, cpu->cs,  cpu->rip);
 
-        asm volatile("cli; hlt");
+		asm volatile("cli; hlt");
 	}
 	else if(cpu->isr_number >= 32 && cpu->isr_number <= 47)
 	{

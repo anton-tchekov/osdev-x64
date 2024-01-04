@@ -1,5 +1,5 @@
-#ifndef OSDEV_X64_MODULE_H
-#define OSDEV_X64_MODULE_H
+#ifndef __MODULE_H__
+#define __MODULE_H__
 
 #include <stdint.h>
 
@@ -55,4 +55,4 @@ typedef struct {
 
 void load_functions(void* data);
 
-#endif //OSDEV_X64_MODULE_H
+#endif
