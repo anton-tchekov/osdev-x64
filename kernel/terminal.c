@@ -69,12 +69,9 @@ void terminal_char(int c)
 	if(terminal.Y >= terminal.Height)
 	{
 		int x, y;
-
-		/* Scroll Up */
 		memmove(terminal.Buffer, terminal.Buffer + terminal.Width,
 				(terminal.Size - terminal.Width) * sizeof(*terminal.Buffer));
 
-		/* Clear last line */
 		memset16(terminal.Buffer + terminal.Size - terminal.Width,
 			vga_entry(' ', vga_color(terminal.FG, terminal.BG)), terminal.Width);
 
