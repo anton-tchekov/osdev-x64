@@ -7,16 +7,9 @@
 #include <stdbool.h>
 
 void printf(const char *fmt, ...);
-
-#define sprintf sprintf_
-int sprintf_(char* buffer, const char* format, ...);
-
-#define snprintf  snprintf_
-#define vsnprintf vsnprintf_
-int snprintf_(char* buffer, size_t count, const char* format, ...);
-int vsnprintf_(char* buffer, size_t count, const char* format, va_list va);
-
-#define vprintf vprintf_
-int vprintf_(const char* format, va_list va);
+int sprintf(char* buffer, const char* format, ...);
+int snprintf(char* buffer, size_t count, const char* format, ...);
+int vsnprintf(char* buffer, size_t count, const char* format, va_list va);
+int vprintf(const char* format, va_list va);
 
 #endif

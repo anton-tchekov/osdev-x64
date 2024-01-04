@@ -13,7 +13,6 @@
 #define PIC1_DATA      (PIC1 + 1)
 #define PIC2_COMMAND   PIC2
 #define PIC2_DATA      (PIC2 + 1)
-#define ICW4_8086      0x01
 
 extern void _load_gdt_and_tss_asm(struct GDT_Pointer *ptr);
 extern void _load_idt_asm(struct IDT_Pointer *ptr);
