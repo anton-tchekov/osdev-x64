@@ -1,6 +1,5 @@
 *.d
 *.elf
-.idea/
 *.iso
 *.o
 *.img
