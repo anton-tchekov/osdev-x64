@@ -54,8 +54,9 @@ static void shell_prompt(void)
 {
 	shell.Cursor = 0;
 	terminal_set_color(TERMINAL_GREEN, TERMINAL_BLACK);
-	printf("\nImaginaryOS> ");
+	printf("\nImaginaryOS>");
 	terminal_set_color(TERMINAL_WHITE, TERMINAL_BLACK);
+	printf(" ");
 }
 
 void shell_enter(void)

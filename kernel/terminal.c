@@ -83,8 +83,17 @@ void terminal_put(int c, int fg, int bg, uint32_t x, uint32_t y)
 	graphics_char(8 * x, 16 * y, c, color_lookup(fg), color_lookup(bg), 0);
 }
 
+static void terminal_cursor(int color)
+{
+	if(terminal.X == terminal.Width) return;
+	if(terminal.Y == terminal.Height) return;
+	graphics_rect(terminal.X * 8, terminal.Y * 16, 2, 16, color_lookup(color));
+}
+
 void terminal_char(int c)
 {
+	terminal_cursor(terminal.BG);
+
 	serial_tx(c);
 	if(c == '\b')
 	{
@@ -121,7 +130,7 @@ void terminal_char(int c)
 	{
 		int x, y;
 		memmove(terminal.Buffer, terminal.Buffer + terminal.Width,
-				(terminal.Size - terminal.Width) * sizeof(*terminal.Buffer));
+			(terminal.Size - terminal.Width) * sizeof(*terminal.Buffer));
 
 		memset16(terminal.Buffer + terminal.Size - terminal.Width,
 			vga_entry(' ', vga_color(terminal.FG, terminal.BG)), terminal.Width);
@@ -141,6 +150,8 @@ void terminal_char(int c)
 
 		terminal.Y = terminal.Height - 1;
 	}
+
+	terminal_cursor(terminal.FG);
 }
 
 void terminal_print(const char *s)
