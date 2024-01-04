@@ -1,7 +1,8 @@
 #include "shell.h"
-#include "keyboard.h"
+#include "ps2.h"
 #include <ctype.h>
 #include <stdio.h>
+#include <string.h>
 
 #define SHELL_BUFFER_SIZE 256
 
@@ -28,13 +29,14 @@ static void event_key (int key, int ascii, int released) {
     if(isprint(ascii))
     {
         shell.Buffer[shell.Cursor++] = ascii;
-        printk("%c", ascii);
+        printf("%c", ascii);
     } else if(ascii == '\n') {
         shell_handle_enter();
     } else if(ascii == '\b' && shell.Cursor > 0) {
         shell.Buffer[--shell.Cursor] = 0;
-        printk("\b");
+        printf("\b");
     }
+    (void)key;
 }
 
 
@@ -44,7 +46,7 @@ void shell_init(){
 
     keyboard_event_register(event_key);
 
-    printk("\n\nImaginaryOS (iOS) made by Anton and Tim \n\n"
+    printf("\n\nImaginaryOS (iOS) made by Anton and Tim \n\n"
            "###########    ###########\n"
            "###########    ###########\n"
            "###                    ###\n"
@@ -61,9 +63,9 @@ void shell_init(){
 }
 
 void shell_handle_enter () {
-    printk("\n");
+    printf("\n");
     shell_handle_command(shell.Buffer);
-    printk("\nImaginaryOS> ");
+    printf("\nImaginaryOS> ");
     shell_clear_buffer();
 }
 
@@ -86,9 +88,9 @@ static void shell_handle_command (char* cmd) {
         *p++ = '\0';
     }
 
-    printk("argc = %d\n", argc);
+    printf("argc = %d\n", argc);
     for(int i = 0; i < argc; ++i) {
-        printk("%d. %s\n", i, argv[i]);
+        printf("%d. %s\n", i, argv[i]);
     }
 }
 
@@ -97,8 +99,4 @@ void shell_clear_buffer () {
         shell.Buffer[i] = 0;
     }
     shell.Cursor = 0;
-}
-
-void puts(const char* line, int x, int y, int c) {
-    printk(line);
 }

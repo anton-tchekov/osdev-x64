@@ -3,18 +3,12 @@
 
 static uint8_t stack[4096];
 
-static struct stivale2_tag la57_tag =
-{
-	.identifier	= STIVALE2_HEADER_TAG_5LV_PAGING_ID,
-	.next = 0
-};
-
 static struct stivale2_header_tag_framebuffer framebuffer_hdr_tag =
 {
 	.tag =
 	{
 		.identifier = STIVALE2_HEADER_TAG_FRAMEBUFFER_ID,
-		.next = (uintptr_t)&la57_tag
+		.next = 0
 	},
 	.framebuffer_width = 0,
 	.framebuffer_height = 0,

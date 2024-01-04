@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "stivale2.h"
 #include <stdint.h>
+#include <inttypes.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -145,7 +146,7 @@ void gdt_init(void)
 	gdt_pointer.base = (uint64_t)&gdt;
 
 	_load_gdt_and_tss_asm(&gdt_pointer);
-	printk("GDT initialized\n");
+	printf("GDT initialized\n");
 }
 
 static void create_descriptor(uint8_t index)
@@ -199,7 +200,7 @@ void idt_init(void)
 	idt_pointer.base = (uint64_t)&idt;
 
 	_load_idt_asm(&idt_pointer);
-	printk("IDT initialized\n");
+	printf("IDT initialized\n");
 }
 
 void pic_disable(void)
@@ -219,30 +220,29 @@ uint64_t isr_handler(uint64_t rsp)
 
 	if(cpu->isr_number <= 31)
 	{
-		printk(
+		printf(
 			"\n"
 			"-------------------\n"
 			"EXCEPTION OCCURRED!\n\n"
-			"ISR-No. %d: %s\n"
-			"Error code: 0x%.16llx\n\n\n"
-			"Register dump:\n\n"
-			"  rax: 0x%.16llx   rbx:    0x%.16llx   rcx: 0x%.16llx   rdx: 0x%.16llx\n"
-			"  rsi: 0x%.16llx   rdi:    0x%.16llx   rbp: 0x%.16llx   r8:  0x%.16llx\n"
-			"  r9:  0x%.16llx   r10:    0x%.16llx   r11: 0x%.16llx   r12: 0x%.16llx\n"
-			"  r13: 0x%.16llx   r14:    0x%.16llx   r15: 0x%.16llx   ss:  0x%.16llx\n"
-			"  rsp: 0x%.16llx   rflags: 0x%.16llx   cs   0x%.16llx   rip: 0x%.16llx\n",
-			cpu->isr_number, exceptions[cpu->isr_number],
-			cpu->error_code,
+			"ISR-No. %"PRId64": %s\n"
+			"Error code: 0x%0"PRIx64"\n\n\n"
+			"Register dump:\n\n",
+                cpu->isr_number, exceptions[cpu->isr_number],
+                cpu->error_code);
+
+        printf(
+            "  rax: 0x%016"PRIx64"   rbx:    0x%016"PRIx64"   rcx: 0x%016"PRIx64"   rdx: 0x%016"PRIx64"\n"
+			"  rsi: 0x%016"PRIx64"   rdi:    0x%016"PRIx64"   rbp: 0x%016"PRIx64"   r8:  0x%016"PRIx64"\n"
+			"  r9:  0x%016"PRIx64"   r10:    0x%016"PRIx64"   r11: 0x%016"PRIx64"   r12: 0x%016"PRIx64"\n"
+			"  r13: 0x%016"PRIx64"   r14:    0x%016"PRIx64"   r15: 0x%016"PRIx64"   ss:  0x%016"PRIx64"\n"
+			"  rsp: 0x%016"PRIx64"   rflags: 0x%016"PRIx64"   cs   0x%016"PRIx64"   rip: 0x%016"PRIx64"\n",
 			cpu->rax, cpu->rbx,    cpu->rcx, cpu->rdx,
 			cpu->rsi, cpu->rdi,    cpu->rbp, cpu->r8,
 			cpu->r9,  cpu->r10,    cpu->r11, cpu->r12,
 			cpu->r13, cpu->r14,    cpu->r15, cpu->ss,
 			cpu->rsp, cpu->rflags, cpu->cs,  cpu->rip);
 
-		for(;;)
-		{
-			asm volatile("cli; hlt");
-		}
+        asm volatile("cli; hlt");
 	}
 	else if(cpu->isr_number >= 32 && cpu->isr_number <= 47)
 	{
@@ -253,7 +253,6 @@ uint64_t isr_handler(uint64_t rsp)
 		}
 
 		outb(PIC1_COMMAND, 0x20);
-
 		handler = irq_handlers[cpu->isr_number - 32];
 		if(handler)
 		{
@@ -322,15 +321,15 @@ void pmm_init(struct stivale2_struct *s)
 
 void memory_map_print(struct stivale2_struct *s)
 {
-	size_t i;
+	uint64_t i;
 	struct stivale2_struct_tag_memmap *memory_map;
 	memory_map = stivale2_get_tag(s, STIVALE2_STRUCT_TAG_MEMMAP_ID);
-	printk("Memory map layout:\n"
+	printf("Memory map layout:\n"
 		"       Base:                Size:                Type:\n");
 	for(i = 0; i < memory_map->entries; ++i)
 	{
 		struct stivale2_mmap_entry *cur = &memory_map->memmap[i];
-		printk("%4d:  0x%.16llx | 0x%.16llx | %s\n",
+		printf("%4"PRId64":  0x%016"PRIx64" | 0x%016"PRIx64" | %s\n",
 			i, cur->base, cur->length, get_memory_map_entry_type(cur->type));
 	}
 }

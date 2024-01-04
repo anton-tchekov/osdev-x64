@@ -7,6 +7,4 @@ void shell_handle_enter (void);
 
 void shell_clear_buffer ();
 
-void puts (const char* line, int x, int y, int c);
-
 #endif

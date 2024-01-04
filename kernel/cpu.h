@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "kprintf.h"
+#include <stdio.h>
 #include "stivale2.h"
 
 #define SPURIOUS_INTERRUPT 255
@@ -156,7 +156,6 @@ struct TSS
 	uint16_t iopb_offset;
 } __attribute__((packed));
 
-__attribute__((aligned(4096)))
 struct GDT
 {
 	struct GDT_Descriptor null;
@@ -169,7 +168,7 @@ struct GDT
 	struct GDT_Descriptor ovmf_code;
 	struct GDT_Descriptor tss_low;
 	struct GDT_Descriptor tss_high;
-} __attribute__((packed));
+} __attribute__((aligned(4096))) __attribute__((packed));
 
 struct GDT_Pointer
 {
@@ -264,6 +263,11 @@ static inline void outb(uint16_t port, uint8_t value)
 	asm volatile("outb %0, %1" : : "a"(value), "Nd"(port));
 }
 
+static inline void outw(uint16_t port, uint16_t value)
+{
+    asm volatile("outw %0, %1" : : "a"(value), "Nd"(port));
+}
+
 static inline uint8_t inb(uint16_t port)
 {
 	uint8_t ret;
@@ -288,25 +292,7 @@ static inline void io_wait(void)
 	inb(0x80);
 }
 
-static inline bool is_la57_enabled(void)
-{
-	uint64_t cr4;
-	asm volatile("mov %%cr4, %0" : "=rax"(cr4));
-	return (cr4 >> 12) & 1;
-}
-
-static inline uintptr_t phys_to_higher_half_data(uintptr_t address)
-{
-	if(is_la57_enabled())
-	{
-		return HIGHER_HALF_DATA_LV5 + address;
-	}
-
-	return HIGHER_HALF_DATA_LV4 + address;
-}
-
 void isr_register(int id, IRQ_Handler handler);
-
 void gdt_init(void);
 void idt_init(void);
 void pic_disable(void);

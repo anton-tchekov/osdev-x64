@@ -1,7 +1,7 @@
-#include "keyboard.h"
+#include "ps2.h"
 #include "cpu.h"
-#include "stdio.h"
-#include "ctype.h"
+#include <stdio.h>
+#include <ctype.h>
 
 static KeyEvent key_event;
 
@@ -217,23 +217,13 @@ static void keyboard_irq_handler(void)
 	}
 }
 
-void keyboard_init(void)
-{
-	while(inb(0x64) & 0x01)
-	{
-		inb(0x60);
-	}
-
-	while(inb(0x64) & 0x02)
-	{
-		outb(0x60, 0xF4);
-	}
-
-	isr_register(1, keyboard_irq_handler);
-	printk("Keyboard driver initialized\n");
-}
-
 void keyboard_event_register(KeyEvent handler)
 {
 	key_event = handler;
+}
+
+void ps2_init(void)
+{
+    isr_register(1, keyboard_irq_handler);
+    printf("PS/2 drivers initialized\n");
 }

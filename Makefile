@@ -57,7 +57,6 @@ $(TARGET): $(OBJ)
 	@printf "\n\n \(^_^)/ Kernel compiled successfully \(^_^)/ \n\n"
 
 $(ISO_IMAGE): limine $(TARGET)
-	rm -rf iso_root
 	mkdir -p iso_root
 	cp $(TARGET) \
 		limine.cfg limine/limine.sys \
@@ -69,7 +68,6 @@ $(ISO_IMAGE): limine $(TARGET)
 		-efi-boot-part --efi-boot-image --protective-msdos-label \
 		iso_root -o $(ISO_IMAGE)
 	limine/limine-install $(ISO_IMAGE)
-	rm -rf iso_root
 
 %.o: %.c
 	@printf " [CC]\t$<\n";

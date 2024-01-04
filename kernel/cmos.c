@@ -1,6 +1,5 @@
 #include "cmos.h"
 #include "cpu.h"
-#include "stdio.h"
 
 #define CMOS_ADDRESS 0x70
 #define CMOS_DATA    0x71
@@ -87,7 +86,7 @@ DateTime rtc_read(void)
 
 	if(!(r.RegisterB & 0x02) && (r.Hour & 0x80))
 	{
-		/* Convert 12 to 24 hour clock */
+		/* Convert 12 to 24-hour clock */
 		r.Hour = ((r.Hour & 0x7F) + 12) % 24;
 	}
 
@@ -100,7 +99,7 @@ DateTime rtc_read(void)
 	result.Second = r.Second;
 	result.Weekday = weekday(r.Day, r.Month, r.Year);
 
-	printk("%s, %04d-%02d-%02d %02d:%02d:%02d\n",
+	printf("%s, %04d-%02d-%02d %02d:%02d:%02d\n",
 		weekday_str(result.Weekday),
 		result.Year, result.Month, result.Day,
 		result.Hour, result.Minute, result.Second);
