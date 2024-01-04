@@ -22,7 +22,8 @@ CC_FLAGS = \
 	-mno-3dnow \
 	-mno-sse \
 	-mno-sse2 \
-	-mno-red-zone
+	-mno-red-zone \
+	-pedantic
 
 AS_FLAGS = -felf64
 

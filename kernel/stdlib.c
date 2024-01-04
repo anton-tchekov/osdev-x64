@@ -21,11 +21,11 @@ void *malloc_align(size_t size, size_t align)
 	if(remainder == 0)
 	{
 		ret = (void *)n;
-		p = ret + size;
+		p = (uint8_t *)ret + size;
 		return ret;
 	}
 
 	ret = (void *)(n + align - remainder);
-	p = ret + size;
+	p = (uint8_t *)ret + size;
 	return ret;
 }
