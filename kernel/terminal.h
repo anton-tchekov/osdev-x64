@@ -1,7 +1,8 @@
 #ifndef __TERMINAL_H__
 #define __TERMINAL_H__
 
-typedef enum {
+typedef enum
+{
 	TERMINAL_BLACK,
 	TERMINAL_WHITE,
 	TERMINAL_RED,
@@ -9,7 +10,7 @@ typedef enum {
 	TERMINAL_GREEN,
 	TERMINAL_YELLOW,
 	TERMINAL_PURPLE,
-	TERMINAL_CYAN,
+	TERMINAL_CYAN
 } TerminalColor;
 
 void terminal_set_color(TerminalColor fg, TerminalColor bg);
