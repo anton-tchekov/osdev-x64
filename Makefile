@@ -8,12 +8,13 @@ LD = @ld
 CC_FLAGS = \
 	-Wall \
 	-Wextra \
+	-Wshadow \
 	-Werror=implicit-function-declaration \
 	-Werror=discarded-qualifiers \
 	-O2 \
 	-pipe \
 	-Ikernel/ \
-	-std=gnu89 \
+	-std=gnu99 \
 	-ffreestanding \
 	-fno-stack-protector \
 	-fno-pic -fpie \
@@ -23,7 +24,7 @@ CC_FLAGS = \
 	-mno-sse \
 	-mno-sse2 \
 	-mno-red-zone \
-	-pedantic
+	-pedantic-errors
 
 AS_FLAGS = -felf64
 

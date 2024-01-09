@@ -61,6 +61,13 @@ typedef struct
 	const uint64_t *Functions;
 } ModuleInit;
 
+typedef void (*SignalHandlerFn)(uint32_t, void *);
+
+typedef struct
+{
+	SignalHandlerFn SignalHandler;
+} ModuleSectionSignalHandler;
+
 void module_list(struct stivale2_struct *s);
 void module_init(struct stivale2_struct *s);
 

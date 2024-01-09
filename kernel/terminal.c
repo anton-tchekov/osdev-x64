@@ -139,12 +139,12 @@ void terminal_char(uint32_t c)
 		{
 			for(x = 0; x < terminal.Width; ++x)
 			{
-				uint32_t v, c, fg, bg;
+				uint32_t v, l, fg, bg;
 				v = terminal.Buffer[y * terminal.Width + x];
-				c = v & 0xFF;
+				l = v & 0xFF;
 				fg = (v >> 8) & 0x0F;
 				bg = (v >> 12);
-				terminal_put(c, fg, bg, x, y);
+				terminal_put(l, fg, bg, x, y);
 			}
 		}
 
