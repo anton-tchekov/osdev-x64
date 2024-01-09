@@ -53,16 +53,15 @@ void module_list(struct stivale2_struct *s)
 			continue;
 		}
 
-		printf(
-			"Module Id: %"PRId32"; Type: %"PRId32"; NumSections: %"PRId32";\n"
-			"    Address = %016"PRIX64"; Size: %016"PRIX64"\n",
-			header->Id, header->Type,
-			header->NumSections, cur->base, cur->length);
+		printf("Module Id: %"PRId32"; Type: %"PRId32"; NumSections: %"PRId32";\n"
+				"    Address = %016"PRIX64"; Size: %016"PRIX64"\n",
+				header->Id, header->Type,
+				header->NumSections, cur->base, cur->length);
 
 		printf("Author: %s\nName: %s\nDescription: %s\n",
-			get_section_str(header, MODULE_SECTION_AUTHOR),
-			get_section_str(header, MODULE_SECTION_NAME),
-			get_section_str(header, MODULE_SECTION_DESCRIPTION));
+				get_section_str(header, MODULE_SECTION_AUTHOR),
+				get_section_str(header, MODULE_SECTION_NAME),
+				get_section_str(header, MODULE_SECTION_DESCRIPTION));
 	}
 }
 
@@ -88,16 +87,17 @@ void module_init(struct stivale2_struct *s)
 
 		if(header->Type == MODULE_TYPE_EXECUTABLE)
 		{
-			ModuleSectionSignalHandler *sect_handler =
-				(ModuleSectionSignalHandler *)((char *)header +
-				get_section(header, MODULE_SECTION_SIGNAL_HANDLER)->Start);
+			uint64_t fn_addr = (uint64_t)header +
+				get_section(header, MODULE_SECTION_SIGNAL_HANDLER)->Start;
+			ModuleSectionSignalHandler *fn =
+				(ModuleSectionSignalHandler *)&fn_addr;
 
 			ModuleInit init_data =
 			{
 				functions
 			};
 
-			sect_handler->SignalHandler(SIGNAL_ID_INIT, &init_data);
+			fn->SignalHandler(SIGNAL_ID_INIT, &init_data);
 		}
 	}
 }
