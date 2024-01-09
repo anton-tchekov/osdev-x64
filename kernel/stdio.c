@@ -4,7 +4,7 @@
 
 void printf(const char *fmt, ...)
 {
-	char buf[512];
+	char buf[1024];
 	va_list ptr;
 	va_start(ptr, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, ptr);
