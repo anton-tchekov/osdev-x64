@@ -5,9 +5,9 @@
 
 static KeyEvent key_event;
 
-static int key_to_codepoint(int k)
+static uint32_t key_to_codepoint(uint32_t k)
 {
-	int nomods = k & 0xFF;
+	uint32_t nomods = k & 0xFF;
 
 	if(nomods == KEY_TAB)                             { return '\t'; }
 	else if(nomods == KEY_BACKSPACE)                  { return '\b'; }
@@ -33,7 +33,7 @@ static int key_to_codepoint(int k)
 	else if(k == KEY_GRAVE)                           { return '^'; }
 	else if(nomods >= KEY_A && nomods <= KEY_Z)
 	{
-		int c = nomods - KEY_A + 'a';
+		uint32_t c = nomods - KEY_A + 'a';
 
 		if(c == 'z') { c = 'y'; }
 		else if(c == 'y') { c = 'z'; }
@@ -61,7 +61,7 @@ static int key_to_codepoint(int k)
 		static const char numbers_altgr[] =
 			{ 0, 0, 0, 0, 0, 0, '{', '[', ']', '}' };
 
-		int idx = nomods - KEY_1;
+		uint32_t idx = nomods - KEY_1;
 
 		if(k & MOD_SHIFT)
 		{
@@ -80,7 +80,7 @@ static int key_to_codepoint(int k)
 	return 0;
 }
 
-static int scancode_to_key(int scancode, int esc)
+static uint32_t scancode_to_key(uint32_t scancode, uint32_t esc)
 {
 	if(esc)
 	{
@@ -158,8 +158,8 @@ static int scancode_to_key(int scancode, int esc)
 
 static void keyboard_irq_handler(void)
 {
-	static int esc, mods;
-	int released, key, codepoint, scancode, mod;
+	static uint32_t esc, mods;
+	uint32_t released, key, codepoint, scancode, mod;
 
 	mod = 0;
 	scancode = inb(0x60);

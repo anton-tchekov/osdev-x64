@@ -14,13 +14,13 @@ void serial_init(void)
 	outb(COM1 + 4, 0x0B);
 }
 
-int serial_rx(void)
+uint32_t serial_rx(void)
 {
 	while((inb(COM1 + 5) & 1) == 0) {}
 	return inb(COM1);
 }
 
-void serial_tx(int c)
+void serial_tx(uint32_t c)
 {
 	while((inb(COM1 + 5) & 0x20) == 0) {}
 	outb(COM1, c);
@@ -28,7 +28,7 @@ void serial_tx(int c)
 
 void serial_tx_str(const char *s)
 {
-	int c;
+	uint32_t c;
 	while((c = *s++))
 	{
 		serial_tx(c);

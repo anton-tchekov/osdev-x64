@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-typedef void (*SignalHandlerFn)(int, void *);
+typedef void (*SignalHandlerFn)(uint32_t, void *);
 
 static const uint64_t functions[] =
 {
@@ -15,7 +15,7 @@ static const uint64_t functions[] =
 	(uint64_t)keyboard_event_register,
 };
 
-static ModuleSection* get_section(ModuleHeader *header, ModuleSectionType type)
+static ModuleSection *get_section(ModuleHeader *header, ModuleSectionType type)
 {
 	uint32_t i;
 	for(i = 0; i < header->NumSections; ++i)
@@ -34,7 +34,7 @@ static char *get_section_str(ModuleHeader *header, ModuleSectionType type)
 	return (char *)header + get_section(header, type)->Start;
 }
 
-void module_init(struct stivale2_struct *s)
+void module_list(struct stivale2_struct *s)
 {
 	uint64_t i;
 	struct stivale2_struct_tag_memmap *memory_map;
@@ -64,6 +64,28 @@ void module_init(struct stivale2_struct *s)
 				get_section_str(header, MODULE_SECTION_AUTHOR),
 				get_section_str(header, MODULE_SECTION_NAME),
 				get_section_str(header, MODULE_SECTION_DESCRIPTION));
+	}
+}
+
+void module_init(struct stivale2_struct *s)
+{
+	uint64_t i;
+	struct stivale2_struct_tag_memmap *memory_map;
+	memory_map = stivale2_get_tag(s, STIVALE2_STRUCT_TAG_MEMMAP_ID);
+	for(i = 0; i < memory_map->entries; ++i)
+	{
+		ModuleHeader *header;
+		struct stivale2_mmap_entry *cur = &memory_map->memmap[i];
+		if(cur->type != STIVALE2_MMAP_KERNEL_AND_MODULES)
+		{
+			continue;
+		}
+
+		header = (ModuleHeader *)cur->base;
+		if(header->Magic != MODULE_MAGIC)
+		{
+			continue;
+		}
 
 		if(header->Type == MODULE_TYPE_EXECUTABLE)
 		{
@@ -71,7 +93,7 @@ void module_init(struct stivale2_struct *s)
 			SignalHandlerFn fn = (SignalHandlerFn)((char *)header + sect->Start);
 			ModuleInit init_data =
 			{
-				.Functions = functions,
+				functions
 			};
 
 			fn(SIGNAL_ID_INIT, &init_data);

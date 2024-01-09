@@ -7,45 +7,45 @@
 
 typedef struct
 {
-	int X;
-	int Y;
-	int BG;
-	int FG;
-	int Width;
-	int Height;
-	int Size;
+	uint32_t X;
+	uint32_t Y;
+	uint32_t BG;
+	uint32_t FG;
+	uint32_t Width;
+	uint32_t Height;
+	uint32_t Size;
 	uint16_t *Buffer;
 } Terminal;
 
 static Terminal terminal;
 
-static uint16_t vga_entry(char c, uint8_t color)
+static uint32_t vga_entry(uint32_t c, uint32_t color)
 {
-	return (uint16_t)c | (uint16_t)color << 8;
+	return c | color << 8;
 }
 
-static uint8_t vga_color(uint8_t fg, uint8_t bg)
+static uint32_t vga_color(uint32_t fg, uint32_t bg)
 {
 	return fg | bg << 4;
 }
 
-void terminal_set_color(int fg, int bg)
+void terminal_set_color(uint32_t fg, uint32_t bg)
 {
 	terminal.FG = fg;
 	terminal.BG = bg;
 }
 
-void terminal_set_fg(int fg)
+void terminal_set_fg(uint32_t fg)
 {
 	terminal.FG = fg;
 }
 
-void terminal_set_bg(int bg)
+void terminal_set_bg(uint32_t bg)
 {
 	terminal.BG = bg;
 }
 
-static uint32_t color_lookup(int c)
+static uint32_t color_lookup(uint32_t c)
 {
 	static const uint32_t colors[] =
 	{
@@ -62,7 +62,7 @@ static uint32_t color_lookup(int c)
 	return colors[c];
 }
 
-void terminal_init(int w, int h)
+void terminal_init(uint32_t w, uint32_t h)
 {
 	terminal.X = 0;
 	terminal.Y = 0;
@@ -77,20 +77,20 @@ void terminal_init(int w, int h)
 		terminal.Size);
 }
 
-void terminal_put(int c, int fg, int bg, uint32_t x, uint32_t y)
+void terminal_put(uint32_t c, uint32_t fg, uint32_t bg, uint32_t x, uint32_t y)
 {
 	terminal.Buffer[y * terminal.Width + x] = vga_entry(c, vga_color(fg, bg));
 	graphics_char(8 * x, 16 * y, c, color_lookup(fg), color_lookup(bg), 0);
 }
 
-static void terminal_cursor(int color)
+static void terminal_cursor(uint32_t color)
 {
 	if(terminal.X == terminal.Width) return;
 	if(terminal.Y == terminal.Height) return;
 	graphics_rect(terminal.X * 8, terminal.Y * 16, 2, 16, color_lookup(color));
 }
 
-void terminal_char(int c)
+void terminal_char(uint32_t c)
 {
 	terminal_cursor(terminal.BG);
 
@@ -128,7 +128,7 @@ void terminal_char(int c)
 
 	if(terminal.Y >= terminal.Height)
 	{
-		int x, y;
+		uint32_t x, y;
 		memmove(terminal.Buffer, terminal.Buffer + terminal.Width,
 			(terminal.Size - terminal.Width) * sizeof(*terminal.Buffer));
 
@@ -139,7 +139,7 @@ void terminal_char(int c)
 		{
 			for(x = 0; x < terminal.Width; ++x)
 			{
-				int v, c, fg, bg;
+				uint32_t v, c, fg, bg;
 				v = terminal.Buffer[y * terminal.Width + x];
 				c = v & 0xFF;
 				fg = (v >> 8) & 0x0F;
@@ -156,7 +156,7 @@ void terminal_char(int c)
 
 void terminal_print(const char *s)
 {
-	int c;
+	uint32_t c;
 	while ((c = *s++))
 	{
 		terminal_char(c);

@@ -13,7 +13,7 @@ static void mmain()
 	printf("Hello from Template Module\n");
 }
 
-static void signal_handler(int signal_id, void *data)
+static void signal_handler(uint32_t signal_id, void *data)
 {
 	switch(signal_id)
 	{

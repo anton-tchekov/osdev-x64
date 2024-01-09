@@ -12,8 +12,8 @@ static const char desc[] = "Shell module";
 
 typedef struct
 {
-	int Cursor;
-	int Line;
+	uint32_t Cursor;
+	uint32_t Line;
 	char Buffer[SHELL_BUFFER_SIZE];
 } Shell;
 
@@ -21,9 +21,9 @@ static Shell shell;
 
 static void shell_command(char *cmd)
 {
-	char *argv[16];
+	char *argv[16]; /* TODO: Overflow */
 	char *p;
-	int argc, i;
+	uint32_t argc, i;
 
 	argc = 0;
 	p = cmd;
@@ -70,7 +70,7 @@ static void shell_enter(void)
 	shell_prompt();
 }
 
-static void event_key(int key, int ascii, int released)
+static void event_key(uint32_t key, uint32_t ascii, uint32_t released)
 {
 	if(released)
 	{
@@ -123,7 +123,7 @@ static void mmain(void)
 	shell_init();
 }
 
-static void signal_handler(int signal_id, void *data)
+static void signal_handler(uint32_t signal_id, void *data)
 {
 	switch(signal_id)
 	{

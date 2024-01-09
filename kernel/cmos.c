@@ -15,7 +15,7 @@ typedef struct
 	uint8_t RegisterB;
 } RTC_Registers;
 
-static int rtc_ready(void)
+static uint32_t rtc_ready(void)
 {
 	outb(CMOS_ADDRESS, 0x0A);
 	return inb(CMOS_DATA) & 0x80;
@@ -41,18 +41,18 @@ static RTC_Registers rtc_read_registers(void)
 	return r;
 }
 
-static int weekday(int d, int m, int y)
+static uint32_t weekday(uint32_t d, uint32_t m, uint32_t y)
 {
 	d += m < 3 ? y-- : y - 2;
 	return (23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) % 7;
 }
 
-static int bcd_to_binary(int v)
+static uint32_t bcd_to_binary(uint32_t v)
 {
 	return (v & 0x0F) + ((v >> 4) * 10);
 }
 
-static const char *weekday_str(int weekday_id)
+static const char *weekday_str(uint32_t weekday_id)
 {
 	static const char *weekday_strs[] =
 	{

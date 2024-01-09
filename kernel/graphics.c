@@ -3,8 +3,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
-
-extern const uint8_t Terminus16[];
+#include "Terminus16.h"
 
 typedef struct
 {
@@ -17,12 +16,12 @@ typedef struct
 
 static Graphics graphics;
 
-int graphics_width(void)
+uint32_t graphics_width(void)
 {
 	return graphics.Width;
 }
 
-int graphics_height(void)
+uint32_t graphics_height(void)
 {
 	return graphics.Height;
 }
@@ -65,12 +64,12 @@ void graphics_rect(uint32_t x, uint32_t y,
 void graphics_char(uint32_t x, uint32_t y, uint32_t c,
 	uint32_t fg, uint32_t bg, uint32_t font)
 {
-	const uint8_t *char_bitmap = Terminus16 + (c - 32) * 16;
+	const uint8_t *char_bitmap;
 	size_t offset;
-	uint32_t *fb;
-	uint32_t color;
-	int xc, yc, byte;
+	uint32_t *fb, yc, byte;
+	int32_t xc;
 
+	char_bitmap = Terminus16 + (c - 32) * 16;
 	offset = y * graphics.Pitch + x;
 	fb = graphics.Pixels + offset;
 	for(yc = 0; yc < 16; ++yc, ++char_bitmap)
@@ -78,8 +77,7 @@ void graphics_char(uint32_t x, uint32_t y, uint32_t c,
 		byte = *char_bitmap;
 		for(xc = 7; xc >= 0; --xc, byte >>= 1)
 		{
-			color = (byte & 1) ? fg : bg;
-			fb[xc] = color;
+			fb[xc] = (byte & 1) ? fg : bg;
 		}
 
 		fb += graphics.Pitch;

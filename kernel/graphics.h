@@ -12,8 +12,8 @@
 #define GFX_CYAN    0xFF88C0D0
 #define GFX_WHITE   0xFFE5E9F0
 
-int graphics_width(void);
-int graphics_height(void);
+uint32_t graphics_width(void);
+uint32_t graphics_height(void);
 void graphics_init(struct stivale2_struct *s, uint32_t color);
 void graphics_clear(uint32_t color);
 void graphics_rect(uint32_t x, uint32_t y,

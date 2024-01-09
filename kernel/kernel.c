@@ -10,10 +10,11 @@
 
 static struct stivale2_struct *_s;
 
-static void boot_any_key(int key, int ascii, int released)
+static void boot_any_key(uint32_t key, uint32_t ascii, uint32_t released)
 {
 	if(ascii == '\n')
 	{
+		module_list(_s);
 		module_init(_s);
 	}
 
