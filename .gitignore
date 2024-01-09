@@ -3,6 +3,7 @@
 *.iso
 *.o
 *.img
-.idea/
+.idea
+.idea/*
 iso_root/
 unused/
