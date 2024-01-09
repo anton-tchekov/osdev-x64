@@ -15,19 +15,19 @@ typedef struct
 	uint8_t RegisterB;
 } RTC_Registers;
 
-static inline int rtc_ready(void)
+static int rtc_ready(void)
 {
 	outb(CMOS_ADDRESS, 0x0A);
 	return inb(CMOS_DATA) & 0x80;
 }
 
-static inline uint8_t rtc_read_register(uint8_t r)
+static uint8_t rtc_read_register(uint8_t r)
 {
 	outb(CMOS_ADDRESS, r);
 	return inb(CMOS_DATA);
 }
 
-static inline RTC_Registers rtc_read_registers(void)
+static RTC_Registers rtc_read_registers(void)
 {
 	RTC_Registers r;
 	while(rtc_ready()) {}
@@ -41,13 +41,13 @@ static inline RTC_Registers rtc_read_registers(void)
 	return r;
 }
 
-static inline int weekday(int d, int m, int y)
+static int weekday(int d, int m, int y)
 {
 	d += m < 3 ? y-- : y - 2;
 	return (23 * m / 9 + d + 4 + y / 4 - y / 100 + y / 400) % 7;
 }
 
-static inline int bcd_to_binary(int v)
+static int bcd_to_binary(int v)
 {
 	return (v & 0x0F) + ((v >> 4) * 10);
 }

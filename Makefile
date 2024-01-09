@@ -1,9 +1,9 @@
 TARGET := kernel/kernel.elf
 ISO_IMAGE := disk.iso
 
-CC = gcc
+CC = @gcc
 AS = @nasm
-LD = ld
+LD = @ld
 
 CC_FLAGS = \
 	-Wall \
@@ -13,7 +13,7 @@ CC_FLAGS = \
 	-O2 \
 	-pipe \
 	-Ikernel/ \
-	-std=gnu11 \
+	-std=gnu89 \
 	-ffreestanding \
 	-fno-stack-protector \
 	-fno-pic -fpie \
@@ -44,7 +44,7 @@ OBJ = $(C_OBJ) $(AS_OBJ)
 
 .PHONY: all clean limine run
 
-all: $(TARGET)
+all: $(TARGET) $(ISO_IMAGE)
 
 run: $(ISO_IMAGE)
 	qemu-system-x86_64 -M q35 -m 2G -serial stdio -cdrom $(ISO_IMAGE)
@@ -54,7 +54,7 @@ limine:
 
 $(TARGET): $(OBJ)
 	$(LD) $(OBJ) $(LD_FLAGS) -o $@
-	@printf "\n\n \(^_^)/ Kernel compiled successfully \(^_^)/ \n\n"
+	@printf "\n\n=== Kernel compiled successfully ===\n\n"
 
 $(ISO_IMAGE): limine $(TARGET)
 	mkdir -p iso_root
@@ -70,8 +70,8 @@ $(ISO_IMAGE): limine $(TARGET)
 	limine/limine-install $(ISO_IMAGE)
 
 %.o: %.c
-	@printf " [CC]\t$<\n";
-	$(CC) $(CC_FLAGS) $(INTERNAL_CC_FLAGS) -c $< -o $@
+	@printf " [CC] $<\n";
+	$(CC) $(CC_FLAGS) -c $< -o $@
 
 %.o: %.s
 	@printf " [AS]\t$<\n";

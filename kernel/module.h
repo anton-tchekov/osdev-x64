@@ -20,7 +20,7 @@ typedef enum
 
 typedef enum
 {
-	SIGNAL_ID_INIT,
+	SIGNAL_ID_INIT
 } SignalId;
 
 typedef enum
@@ -30,7 +30,7 @@ typedef enum
 	MODULE_SECTION_DESCRIPTION,
 	MODULE_SECTION_DEPENDENCIES,
 	MODULE_SECTION_DATA,
-	MODULE_SECTION_SIGNAL_HANDLER,
+	MODULE_SECTION_SIGNAL_HANDLER
 } ModuleSectionType;
 
 typedef struct

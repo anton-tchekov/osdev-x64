@@ -63,6 +63,8 @@ static const char *exceptions[] =
 
 void gdt_init(void)
 {
+	uint64_t i, tss_base;
+
 	gdt.null.limit_15_0 = 0;
 	gdt.null.base_15_0 = 0;
 	gdt.null.base_23_16 = 0;
@@ -129,13 +131,12 @@ void gdt_init(void)
 	gdt.tss_high.limit_19_16_and_flags = 0x00;
 	gdt.tss_high.base_31_24 = 0;
 
-	for(uint64_t i = 0; i < sizeof(tss); ++i)
+	for(i = 0; i < sizeof(tss); ++i)
 	{
 		((uint8_t *)(void *)&tss)[i] = 0;
 	}
 
-	uint64_t tss_base = (uint64_t)&tss;
-
+	tss_base = (uint64_t)&tss;
 	gdt.tss_low.base_15_0 = tss_base & 0xFFFF;
 	gdt.tss_low.base_23_16 = (tss_base >> 16) & 0xFF;
 	gdt.tss_low.base_31_24 = (tss_base >> 24) & 0xFF;
@@ -160,6 +161,11 @@ static void create_descriptor(uint8_t index)
 	idt[index].offset_31_16 = (offset >> 16) & 0xFFFF;
 	idt[index].offset_63_32 = (offset >> 32) & 0xFFFFFFFF;
 	idt[index].zero = 0;
+}
+
+static void io_wait(void)
+{
+	inb(0x80);
 }
 
 void idt_init(void)

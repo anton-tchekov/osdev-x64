@@ -35,22 +35,6 @@ typedef struct
 	uint64_t ss;
 } interrupt_cpu_state_t;
 
-typedef struct
-{
-	uint32_t leaf;
-	uint32_t subleaf;
-
-	uint32_t eax;
-	uint32_t ebx;
-	uint32_t ecx;
-	uint32_t edx;
-} cpuid_registers_t;
-
-typedef enum
-{
-	CPUID_GET_VENDOR_STRING
-} cpuid_requests_t;
-
 struct GDT_Descriptor
 {
 	uint16_t limit_15_0;
@@ -119,84 +103,16 @@ struct IDT_Pointer
 
 typedef void (*IRQ_Handler)(void);
 
-static inline int cpuid(cpuid_registers_t *registers)
-{
-	uint32_t cpuid_max;
-
-	asm volatile("cpuid"
-		: "=a" (cpuid_max)
-		: "a" (registers->leaf & 0x80000000)
-		: "rbx", "rcx", "rdx");
-
-	if(registers->leaf > cpuid_max)
-	{
-		return 0;
-	}
-
-	asm volatile("cpuid" :
-		"=a" (registers->eax),
-		"=b" (registers->ebx),
-		"=c" (registers->ecx),
-		"=d" (registers->edx) :
-		"a" (registers->leaf),
-		"c" (registers->subleaf));
-
-	return 1;
-}
-
-static inline char *cpu_get_vendor_string(void)
-{
-	static char vendor_string[16];
-	cpuid_registers_t regs =
-	{
-		.leaf = CPUID_GET_VENDOR_STRING,
-		.subleaf = 0,
-		.eax = 0,
-		.ebx = 0,
-		.ecx = 0,
-		.edx = 0
-	};
-
-	cpuid(&regs);
-	snprintf(vendor_string, 13, "%.4s%.4s%.4s",
-		(char *)&regs.ebx, (char *)&regs.edx, (char *)&regs.ecx);
-
-	return vendor_string;
-}
-
-static inline void hlt(void)
-{
-	asm("hlt");
-}
-
-static inline void cli(void)
-{
-	asm("cli");
-}
-
-static inline void halt(void)
-{
-	for(;;)
-	{
-		hlt();
-	}
-}
-
-static inline void outb(uint16_t port, uint8_t value)
+static void outb(uint16_t port, uint8_t value)
 {
 	asm volatile("outb %0, %1" : : "a"(value), "Nd"(port));
 }
 
-static inline uint8_t inb(uint16_t port)
+static uint8_t inb(uint16_t port)
 {
 	uint8_t ret;
 	asm volatile("inb %1, %0" : "=a"(ret) : "Nd"(port));
 	return ret;
-}
-
-static inline void io_wait(void)
-{
-	inb(0x80);
 }
 
 void isr_register(int id, IRQ_Handler handler);

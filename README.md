@@ -2,41 +2,36 @@
 
 ## Run the project
 
-Builds Kernel to .elf file:
+Builds OS to `.elf` and `.iso` file:
 ```shell
 make
 ```
 
-Create `image.iso` file (runs make internally)
+Run OS in QEMU
 ```shell
-./iso.sh
+make run
 ```
 
-Runs the qemu emulator
+Burn OS image to USB flash drive
 ```shell
-./emu.sh
+./burn.sh /dev/sdX
 ```
 
 ## Directory Structure
 
 ```
 - iso_root
-    - myos.elf
 - limine
-    (limine stuff)
 - kernel
     - Makefile
     - kernel.c
-    (Kernel stuff)
-- modules
+    - etc.
+- modules (Kernel Modules)
+    - template
     - shell
         - Makefile
         - shell.c
         - shell.bin (Output binary)
-    - fs
-    (Kernel Modules)
-- Makefile (builds all modules by calling their Makefile)
-- iso.sh (copies the output binarys to the iso_root folder)
-- emu.sh (opens iso with qemu)
-- myos.iso
+- Makefile
+- disk.iso (OS ISO image)
 ```

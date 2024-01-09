@@ -31,10 +31,12 @@ void kmain(struct stivale2_struct *s)
 	memory_map_print(s);
 	gdt_init();
 	idt_init();
-	printf("CPU Vendor ID String: %s\n", cpu_get_vendor_string());
 	ps2_init();
 	rtc_read();
 	printf("Press enter to continue\n");
 	keyboard_event_register(boot_any_key);
-	halt();
+	for(;;)
+	{
+		asm("hlt");
+	}
 }

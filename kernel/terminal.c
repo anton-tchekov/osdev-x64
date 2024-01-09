@@ -19,12 +19,12 @@ typedef struct
 
 static Terminal terminal;
 
-static inline uint16_t vga_entry(char c, uint8_t color)
+static uint16_t vga_entry(char c, uint8_t color)
 {
 	return (uint16_t)c | (uint16_t)color << 8;
 }
 
-static inline uint8_t vga_color(uint8_t fg, uint8_t bg)
+static uint8_t vga_color(uint8_t fg, uint8_t bg)
 {
 	return fg | bg << 4;
 }

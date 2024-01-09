@@ -69,10 +69,10 @@ void graphics_char(uint32_t x, uint32_t y, uint32_t c,
 	size_t offset;
 	uint32_t *fb;
 	uint32_t color;
+	int xc, yc, byte;
 
 	offset = y * graphics.Pitch + x;
 	fb = graphics.Pixels + offset;
-	int xc, yc, byte;
 	for(yc = 0; yc < 16; ++yc, ++char_bitmap)
 	{
 		byte = *char_bitmap;
