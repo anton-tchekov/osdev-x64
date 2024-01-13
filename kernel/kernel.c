@@ -10,10 +10,22 @@
 
 static struct stivale2_struct *_s;
 
+extern SignalHandlerFn module_cur_handler;
+
+static void module_key(uint32_t key, uint32_t ascii, uint32_t released)
+{
+	if(module_cur_handler)
+	{
+		ModuleKeyEvent mke = { key, ascii, released };
+		module_cur_handler(SIGNAL_ID_KEYBOARD, &mke);
+	}
+}
+
 static void boot_any_key(uint32_t key, uint32_t ascii, uint32_t released)
 {
 	if(ascii == '\n')
 	{
+		keyboard_event_register(module_key);
 		module_list(_s);
 		module_init(_s);
 	}

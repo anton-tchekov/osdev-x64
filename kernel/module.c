@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <string.h>
 
 static const uint64_t functions[] =
 {
@@ -67,6 +68,7 @@ void module_list(struct stivale2_struct *s)
 	}
 }
 
+SignalHandlerFn module_cur_handler = NULL;
 
 void module_init(struct stivale2_struct *s)
 {
@@ -99,6 +101,11 @@ void module_init(struct stivale2_struct *s)
 			{
 				functions
 			};
+
+			if(!strcmp(get_section_str(header, MODULE_SECTION_NAME), "Shell"))
+			{
+				module_cur_handler = fn->SignalHandler;
+			}
 
 			fn->SignalHandler(SIGNAL_ID_INIT, &init_data);
 		}

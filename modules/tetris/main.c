@@ -439,7 +439,6 @@ static void mmain(void)
 
 	//_clear_field(field);
 	//np.Type = _new_piece(&cp);
-	//keyboard_event_register(event_key);
 }
 
 static void signal_handler(uint32_t signal_id, void *data)
