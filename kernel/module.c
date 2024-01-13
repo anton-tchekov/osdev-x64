@@ -1,16 +1,18 @@
 #include "module.h"
 #include "ps2.h"
 #include "terminal.h"
+#include "graphics.h"
+#include "cpu.h"
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <inttypes.h>
 
 static const uint64_t functions[] =
 {
 	(uint64_t)printf,
-	(uint64_t)isprint,
 	(uint64_t)terminal_set_color,
-	(uint64_t)keyboard_event_register,
+	(uint64_t)graphics_rect,
 };
 
 static ModuleSection *get_section(ModuleHeader *header, ModuleSectionType type)
@@ -64,6 +66,7 @@ void module_list(struct stivale2_struct *s)
 				get_section_str(header, MODULE_SECTION_DESCRIPTION));
 	}
 }
+
 
 void module_init(struct stivale2_struct *s)
 {

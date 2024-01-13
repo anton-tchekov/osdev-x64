@@ -20,7 +20,9 @@ typedef enum
 
 typedef enum
 {
-	SIGNAL_ID_INIT
+	SIGNAL_ID_INIT,
+	SIGNAL_ID_KEYBOARD,
+	SIGNAL_ID_TIMER
 } SignalId;
 
 typedef enum
@@ -51,15 +53,19 @@ typedef struct
 typedef enum
 {
 	KERNEL_FN_PRINTF,
-	KERNEL_FN_ISPRINT,
 	KERNEL_FN_TERMINAL_SET_COLOR,
-	KERNEL_FN_KEYBOARD_REGISTER_FN
+	KERNEL_FN_GRAPHICS_RECT,
 } ModuleFunctions;
 
 typedef struct
 {
 	const uint64_t *Functions;
 } ModuleInit;
+
+typedef struct
+{
+	uint32_t Key, Codepoint, Released;
+} ModuleKeyEvent;
 
 typedef void (*SignalHandlerFn)(uint32_t, void *);
 

@@ -46,8 +46,11 @@ OBJ = $(C_OBJ) $(AS_OBJ)
 .PHONY: all clean limine run
 
 all: $(TARGET) $(ISO_IMAGE)
+	make -C modules/shell/
+	make -C modules/tetris/
+	make -C modules/template/
 
-run: $(ISO_IMAGE)
+run:
 	qemu-system-x86_64 -M q35 -m 2G -serial stdio -cdrom $(ISO_IMAGE)
 
 limine:

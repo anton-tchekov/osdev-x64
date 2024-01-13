@@ -19,6 +19,11 @@ typedef struct
 
 static Shell shell;
 
+static int isprint(int c)
+{
+	return c >= 32 && c <= 126;
+}
+
 static void shell_command(char *cmd)
 {
 	char *argv[16]; /* TODO: Overflow */
@@ -100,7 +105,6 @@ static void shell_init(void)
 {
 	shell.Cursor = 0;
 	shell.Line = 0;
-	keyboard_event_register(event_key);
 	terminal_set_color(TERMINAL_RED, TERMINAL_BLACK);
 	printf("\n\nImaginaryOS made by Anton and Tim\n\n"
 		"###########    ###########\n"
@@ -131,6 +135,13 @@ static void signal_handler(uint32_t signal_id, void *data)
 		fns = ((ModuleInit *)data)->Functions;
 		mmain();
 		break;
+
+	case SIGNAL_ID_KEYBOARD:
+	{
+		ModuleKeyEvent *mke = (ModuleKeyEvent *)data;
+		event_key(mke->Key, mke->Codepoint, mke->Released);
+		break;
+	}
 	}
 }
 

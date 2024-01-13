@@ -317,8 +317,7 @@ uint64_t isr_handler(uint64_t rsp)
 	{
 		printf(
 			"\n"
-			"-------------------\n"
-			"EXCEPTION OCCURRED!\n\n"
+			"UNHANDLED EXCEPTION OCCURED\n\n"
 			"ISR-No. %"PRId64": %s\n"
 			"Error code: 0x%0"PRIx64"\n\n\n"
 			"Register dump:\n\n",
