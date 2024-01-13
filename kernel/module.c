@@ -102,7 +102,7 @@ void module_init(struct stivale2_struct *s)
 				functions
 			};
 
-			if(!strcmp(get_section_str(header, MODULE_SECTION_NAME), "Shell"))
+			if(!strcmp(get_section_str(header, MODULE_SECTION_NAME), "Tetris"))
 			{
 				module_cur_handler = fn->SignalHandler;
 			}

@@ -78,11 +78,16 @@ const Pieces[] =
 	}
 };
 
-/* Current Piece, Next Piece */
-Piece cp, np;
-Status status;
-int ticks, last_ticks = 0, ticks_update = FALL_SPEED_DEFAULT, score = 0;
-int field[FIELD_WIDTH * FIELD_HEIGHT];
+typedef struct
+{
+	Piece cp, np;
+	Status status;
+	int ticks, last_ticks, ticks_update, score;
+	int field[FIELD_WIDTH * FIELD_HEIGHT];
+	int rng_state;
+} Tetris;
+
+static Tetris tetris;
 
 static void _draw_field(int *field);
 static void _clear_field(int *field);
@@ -97,13 +102,12 @@ static void _draw_piece(Piece *p);
 static int _valid_position(int *field, Piece *p);
 static void _to_field(int *field, Piece *p);
 
-static int rng_state = 31419526;
 static int rand(void)
 {
-	rng_state ^= rng_state << 13;
-	rng_state ^= rng_state >> 17;
-	rng_state ^= rng_state << 5;
-	return rng_state;
+	tetris.rng_state ^= tetris.rng_state << 13;
+	tetris.rng_state ^= tetris.rng_state >> 17;
+	tetris.rng_state ^= tetris.rng_state << 5;
+	return tetris.rng_state;
 }
 
 void *memset(void *ptr, int value, size_t size)
@@ -317,8 +321,7 @@ static void _to_field(int *field, Piece *p)
 	{
 		if(blocks & bit)
 		{
-			field[(p->Y + row) * FIELD_WIDTH + (p->X + col)] =
-				p->Type + 1;
+			field[(p->Y + row) * FIELD_WIDTH + (p->X + col)] = p->Type + 1;
 		}
 
 		if(++col == 4)
@@ -331,9 +334,9 @@ static void _to_field(int *field, Piece *p)
 
 static void update(void)
 {
-	_draw_piece(&np);
-	_draw_piece(&cp);
-	_draw_field(field);
+	_draw_piece(&tetris.np);
+	_draw_piece(&tetris.cp);
+	_draw_field(tetris.field);
 	_draw_grid();
 }
 
@@ -344,7 +347,7 @@ static void event_key(uint32_t key, uint32_t ascii, uint32_t released)
 		switch(key)
 		{
 		case KEY_DOWN:
-			ticks_update = FALL_SPEED_DEFAULT;
+			tetris.ticks_update = FALL_SPEED_DEFAULT;
 			break;
 
 		default:
@@ -356,41 +359,41 @@ static void event_key(uint32_t key, uint32_t ascii, uint32_t released)
 		switch(key)
 		{
 		case KEY_ESCAPE:
-			status &= ~RUNNING;
+			tetris.status &= ~RUNNING;
 			break;
 
 		case KEY_DOWN:
-			ticks_update = FALL_SPEED_FAST;
+			tetris.ticks_update = FALL_SPEED_FAST;
 			break;
 
 		case KEY_UP:
-			if(--cp.Rotation == -1)
+			if(--tetris.cp.Rotation == -1)
 			{
-				cp.Rotation = 3;
+				tetris.cp.Rotation = 3;
 			}
 
-			if(_valid_position(field, &cp))
+			if(_valid_position(tetris.field, &tetris.cp))
 			{
-				if(++cp.Rotation == 4)
+				if(++tetris.cp.Rotation == 4)
 				{
-					cp.Rotation = 0;
+					tetris.cp.Rotation = 0;
 				}
 			}
 			break;
 
 		case KEY_LEFT:
-			--cp.X;
-			if(_valid_position(field, &cp))
+			--tetris.cp.X;
+			if(_valid_position(tetris.field, &tetris.cp))
 			{
-				++cp.X;
+				++tetris.cp.X;
 			}
 			break;
 
 		case KEY_RIGHT:
-			++cp.X;
-			if(_valid_position(field, &cp))
+			++tetris.cp.X;
+			if(_valid_position(tetris.field, &tetris.cp))
 			{
-				--cp.X;
+				--tetris.cp.X;
 			}
 			break;
 
@@ -409,36 +412,39 @@ static void timer_event(void)
 	/*if(ticks > last_ticks + ticks_update)
 	{
 		last_ticks = ticks;*/
-		++cp.Y;
-		if(_valid_position(field, &cp))
+		++tetris.cp.Y;
+		if(_valid_position(tetris.field, &tetris.cp))
 		{
-			--cp.Y;
-			_to_field(field, &cp);
-			score += _field_rows(field);
-			np.Type = _new_piece(&cp);
-			ticks_update = FALL_SPEED_DEFAULT;
-			if(_valid_position(field, &cp))
+			--tetris.cp.Y;
+			_to_field(tetris.field, &tetris.cp);
+			tetris.score += _field_rows(tetris.field);
+			tetris.np.Type = _new_piece(&tetris.cp);
+			tetris.ticks_update = FALL_SPEED_DEFAULT;
+			if(_valid_position(tetris.field, &tetris.cp))
 			{
-				_clear_field(field);
+				_clear_field(tetris.field);
 			}
 		}
 	/*}
 
-	++ticks;*/
-	//printf("UR GAE\n");
-
-	graphics_rect(0, 0, 100, 100, 0xFFFFFFFF);
+	++ticks;
+	*/
 }
 
 static void mmain(void)
 {
-	printf("TETRIS\n");
-	np.X = 11;
-	np.Y = 1;
-	np.Rotation = 1;
+	tetris.last_ticks = 0;
+	tetris.ticks_update = FALL_SPEED_DEFAULT;
+	tetris.score = 0;
+	tetris.rng_state = 31419526;
 
-	//_clear_field(field);
-	//np.Type = _new_piece(&cp);
+	tetris.np.X = 11;
+	tetris.np.Y = 1;
+	tetris.np.Rotation = 1;
+
+	_clear_field(tetris.field);
+	tetris.np.Type = _new_piece(&tetris.cp);
+	_draw_grid();
 }
 
 static void signal_handler(uint32_t signal_id, void *data)
@@ -449,6 +455,19 @@ static void signal_handler(uint32_t signal_id, void *data)
 		fns = ((ModuleInit *)data)->Functions;
 		mmain();
 		break;
+
+	case SIGNAL_ID_KEYBOARD:
+	{
+		ModuleKeyEvent *mke = (ModuleKeyEvent *)data;
+		event_key(mke->Key, mke->Codepoint, mke->Released);
+		break;
+	}
+
+	case SIGNAL_ID_TIMER:
+	{
+		timer_event();
+		break;
+	}
 	}
 }
 

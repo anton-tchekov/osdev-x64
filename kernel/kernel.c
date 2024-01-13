@@ -21,10 +21,19 @@ static void module_key(uint32_t key, uint32_t ascii, uint32_t released)
 	}
 }
 
+static void timer_event(void)
+{
+	if(module_cur_handler)
+	{
+		module_cur_handler(SIGNAL_ID_TIMER, NULL);
+	}
+}
+
 static void boot_any_key(uint32_t key, uint32_t ascii, uint32_t released)
 {
 	if(ascii == '\n')
 	{
+		isr_register(0, timer_event);
 		keyboard_event_register(module_key);
 		module_list(_s);
 		module_init(_s);
